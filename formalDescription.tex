@@ -1,0 +1,105 @@
+%! TEX program = lualatex
+
+\documentclass[hidelinks,12pt]{article}                                         
+
+\usepackage[T1]{fontenc}
+%\usepackage{luatextra}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{impnattypo}
+\usepackage{mathtools}
+\usepackage{microtype}
+
+\usepackage[margin=1.25in]{geometry}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\TODO}{\textbf{À décider}}
+
+\pagenumbering{gobble}
+
+\begin{document}
+
+\section{The primitives}
+
+    The section is intended to be the list of the primitives and the
+    reasoning behinf why we need them. A long list if you wish, with arguments
+    for the existence of each element.
+
+    \subsection{\texttt{Draw}}
+
+    The \texttt{floats} are respectively a speed $s$, the variation of the
+    radius of curvature $\theta$ --- i.e. how much the line is locally
+    ``turning'' --- and the variation of this angle $\theta'$ --- its
+    derivative.
+
+    The point of this decomposition is to easily describe:
+    \begin{enumerate}
+        \item A segment or a line : $\theta = \theta' = 0$ and $v \neq 0$
+            meaning that we are drawing straight.
+        \item A circle, $v \neq 0$ \emph{and} $\theta \neq 0$, but $\theta' =
+            0$, in this case we are moving and we have a fixed curvature, thus
+            we are drawing a circular arc.
+        \item A spiral with both $v$ and $\theta'$ set to non-zero values.
+        \item \emph{Unclear whether this should be a feature or not} : $v =
+            \theta' = 0$ to get angles?
+    \end{enumerate}
+
+    Draw alone will not do anything.
+
+    \subsection{\texttt{Push/Pop}}
+
+    Or any mechanism that could allow branching: continuations, mutable
+    environment, etc.
+
+    This would be required to have backtracking, e.g. in the diamond shape to
+    avoid manually going back to the initial point.
+
+    \subsection{\texttt{Face/Turn}}
+
+    This is required in order to draw angles (or we could see this as a special
+    case of \texttt{Draw} with $v = 0$ maybe?).
+
+    Typical use-case: draw a triangle, you have to face a direction (absolute,
+    less likely) or to turn (relative, easy) in order to draw the shape
+
+    \subsection{\texttt{DiscreteRepeat}}
+
+    Repeat a given set of instructions a given number of times.
+
+    This is desireable for basic polygons, in particular highly regular one, to
+    avoid instruction duplication.
+
+    \subsection{\texttt{ContinuousRepeat} \emph{or} \texttt{integrate}}
+
+    This is required in order to get \texttt{Draw} to actually do something.
+    Draw alone will not do anything.
+
+    \subsection{\texttt{(;)}}
+
+    This is just required to ``concatenate'' programs.
+
+\section{Syntax}
+
+\texttt{
+    \begin{tabular}{lll}
+        Number $\Coloneqq$ &|&$0, 1, 2, ...$ \\
+                           &|&$\pi, \sqrt{2}, 0.5, ...$ \\
+                           &|&Undefined \\
+                           &&\\
+        Program $\Coloneqq$&|& Program ; Program \\
+                           &|& Draw(Number, Number, Number) \\
+                           &|& Push()\\
+                           &|& Pop()\\
+                           &|& Face(Number)\\
+                           &|& DiscreteRepeat(Number,Program)\\
+                           &|& Integrate(Number,Program)\\
+    \end{tabular}
+}
+
+\section{Semantics}
+
+\section{Bootstrap: what can we generate?}
+
+\end{document}
