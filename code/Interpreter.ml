@@ -3,17 +3,19 @@ open Hashtbl
 open Unix
 
 type program = Concat of program * program
-             | Draw of float * float * float
+             | Draw of float * float * float * float
              | Save of string
              | Load of string
              | Turn of float
              | DiscreteRepeat of int * program
              | Integrate of float * program
+             | Nop
 
 type internal = { mutable x : float
                 ; mutable y : float
                 ; mutable face : float
                 ; mutable v : float
+                ; mutable v' : float
                 ; mutable th : float
                 ; mutable th' : float }
 
@@ -25,13 +27,16 @@ let pi4 = pi /. 4.
 
 let (++) pr1 pr2 = Concat(pr1, pr2)
 
-let (<<-) curr future =
+let replace curr future =
     curr.x <- future.x ;
     curr.y <- future.y ;
     curr.face <- future.face ;
     curr.v <- future.v ;
+    curr.v' <- future.v' ;
     curr.th <- future.th ;
     curr.th' <- future.th'
+
+let (<<-) curr future = replace curr future
 
 let print_float f = match f with
  | f when f = pi  -> "π"
@@ -46,9 +51,9 @@ let pp_program program =
     let rec pp_helper program tabs = match program with
         | Concat (p1,p2) ->
             pp_helper p1 tabs ; print_endline " ;" ; pp_helper p2 tabs
-        | Draw (v, th, th') ->
-            Printf.printf "%sDraw(%s, %s, %s)"
-                tabs (print_float v)
+        | Draw (v, v', th, th') ->
+            Printf.printf "%sDraw(v=%s, v'=%s, theta=%s, theta'=%s)"
+                tabs (print_float v) (print_float v')
                 (print_float th) (print_float th')
         | Save name -> Printf.printf "%sSave '%s'" tabs name
         | Load name -> Printf.printf "%sLoad '%s'" tabs name
@@ -63,11 +68,12 @@ let pp_program program =
                 tabs (print_float f) ;
             pp_helper pr (Printf.sprintf "%s  " tabs) ;
             Printf.printf "\n%s}" tabs
+        | Nop -> ()
     in
-    print_endline "### PROGRAM PRINTING ###" ;
+    print_endline "### PROGRAM DEBUG PRINT ###" ;
     pp_helper program "" ;
     print_newline () ;
-    print_endline "### PROGRAM END ###" ;
+    print_endline "###  PROGRAM DEBIG END  ###" ;
     print_newline ()
 
 let interpret program =
@@ -79,7 +85,7 @@ let interpret program =
             Hashtbl.add htbl name save_state
         | Load name ->
             (try
-                curr_state <<- Hashtbl.find htbl name ;
+                replace curr_state (Hashtbl.find htbl name) ;
                 moveto
                     (int_of_float curr_state.x)
                     (int_of_float curr_state.y)
@@ -90,8 +96,9 @@ let interpret program =
                         non-extistent variable %s!" name))
         | Turn f ->
             curr_state.face <- curr_state.face +. f
-        | Draw (v,th,th') ->
+        | Draw (v,v',th,th') ->
                 curr_state.v <- v ;
+                curr_state.v' <- v' ;
                 curr_state.th <- th ;
                 curr_state.th' <- th'
         | Concat (p1,p2) ->
@@ -106,7 +113,7 @@ let interpret program =
                                 htbl curr_state)
         | Integrate (f, pr) ->
             inter pr htbl curr_state ;
-            for i = 0 to 10*(int_of_float f) do
+            for i = 0 to (int_of_float f) do
                 let futur_x =
                     curr_state.x
                  +. curr_state.v *. cos(curr_state.face)
@@ -119,49 +126,19 @@ let interpret program =
                 curr_state.y <- futur_y ;
                 curr_state.face <-
                     curr_state.face +. curr_state.th ;
+                curr_state.v <-
+                    curr_state.v +. curr_state.v' ;
                 curr_state.th <-
                     curr_state.th +. curr_state.th'
             done
+        | Nop -> ()
     in let initial_state =
         { x = ((float_of_int (size_x ())) /. 2.)
         ; y = ((float_of_int (size_y ())) /. 2.)
         ; face = 0.
         ; v = 0.
+        ; v' = 0.
         ; th = 0.
         ; th' = 0. }
     in let l = inter program (Hashtbl.create 101) initial_state in
     match l with _ -> ()
-
-let () =
-    let simpleLine = Integrate(200., Draw(1.,0.,0.)) in
-    let square =
-        DiscreteRepeat(4,
-            Turn(pi2) ++ Integrate(20., Draw(1., 0., 0.))) in
-    let test =
-           Save "cou"
-        ++ Integrate(20., Draw(1., 0.05, 0.))
-        ++ Load "cou"
-        ++ Turn((-1.) *. pi2)
-        ++ Integrate(5., Draw(1., 0., 0.))
-        ++ Save "torse"
-        ++ Integrate(5., Draw(1., 0., 0.))
-        ++ Save "jambes"
-        ++ Turn(pi4)
-        ++ Integrate(5., Draw(1., 0., 0.))
-        ++ Load "jambes"
-        ++ Turn((-1.) *. pi4)
-        ++ Integrate(5., Draw(1., 0., 0.))
-        ++ Load "torse"
-        ++ Turn(pi2)
-        ++ Integrate(5., Draw(1., 0., 0.))
-        ++ Load "torse"
-        ++ Turn((-1.)*.pi2)
-        ++ Integrate(5., Draw(1., 0., 0.))
-    in
-    pp_program simpleLine ;
-    pp_program square ;
-    pp_program test ;
-    open_graph "" ;
-    moveto (size_x () / 2) (size_y () / 2) ;
-    interpret test ;
-    Unix.sleep 5 ;
