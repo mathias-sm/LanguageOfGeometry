@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" data-framework="js_of_ocaml">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Language Of Geometry</title>
+    </head>
+    <body>
+        <script src="Main.js"></script>
+        <header>
+            <h1>The Language of Geometry</h1>
+        </header>
+        <main class="test">
+            <section>
+                <h2>Warning</h2>
+                This is still unfinished. Many things that you may expect to
+                work are not. In a random order:
+                <ul>
+                    <li>There are <emph>no</emph> mathematical operation yet
+                        (i.e. 3*4 = ERROR, not 12)</li>
+                    <li>Every float needs a dot: 4 and 4. are not equal, nor
+                        interchangeable</li>
+                    <li>This is still generally rough : the screen is limited,
+                    and so are many things.</li>
+                </ul>
+                Generally speaking, if you strictly respect the syntax, you
+                should have no surprise (or you are welcome to report them!)
+            </section>
+            <section>
+                <h2>Syntax</h2>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Number<sub>int</sub></td>
+                            <td>::=</td>
+                            <td>|</td>
+                            <td>0, 1, 2, ...</td>
+                        </tr>
+                        <tr>
+                            <td>Number<sub>float</sub></td>
+                            <td>::=</td>
+                            <td>|</td>
+                            <td>Number<sub>int</sub>.Number<sub>int</sub></td>
+                        </tr>
+                        <tr>
+                            <td></td><td></td><td>|</td>
+                            <td>Number<sub>int</sub>.</td>
+                        </tr>
+                        <tr>
+                            <td>Number</td>
+                            <td>::=</td>
+                            <td>|</td>
+                            <td>Number<sub>int</sub> | Number<sub>float</sub> |
+                                Undefined</td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td>Program</td>
+                            <td>::=</td>
+                            <td>|</td>
+                            <td>Program ; Program</td>
+                        </tr>
+                        <tr>
+                            <td></td><td></td><td>|</td>
+                            <td>Draw(Number<sub>float</sub>,Number<sub>float</sub>)</td>
+                        </tr>
+                        <tr>
+                            <td></td><td></td><td>|</td>
+                            <td>Set(Number<sub>float</sub>,Number<sub>float</sub>)</td>
+                        </tr>
+                        <tr>
+                            <td></td><td></td><td>|</td>
+                            <td>Save(string)</td>
+                        </tr>
+                        <tr>
+                            <td></td><td></td><td>|</td>
+                            <td>Load(string)</td>
+                        </tr>
+                        <tr>
+                            <td></td><td></td><td>|</td>
+                            <td>Turn(Number<sub>float</sub>)</td>
+                        </tr>
+                        <tr>
+                            <td></td><td></td><td>|</td>
+                            <td>DiscreteRepeat(Number<sub>int</sub>) { Program }</td>
+                        </tr>
+                        <tr>
+                            <td></td><td></td><td>|</td>
+                            <td>Integrate(Number<sub>float</sub>) { Program }</td>
+                        </tr>
+                        <tr>
+                            <td></td><td></td><td>|</td>
+                            <td>{}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            <section>
+                <h2>Input</h2>
+                <form>
+                    <textarea id="program" rows="20">Save("Cou");
+Set(2.,0.1);
+Integrate(100.) {} ;
+Load("Cou");
+Turn(-1.57079632679);
+Integrate(25.) {};
+Save("Bras");
+Integrate(75.) {};
+Save("Hanches");
+Turn(-0.5);
+Integrate(75.) {};
+Load("Hanches");
+Turn(0.5);
+Integrate(75.) {};
+Load("Bras");
+Turn(1.57079632679);
+Integrate(50.) {};
+Load("Bras");
+Turn(-1.57079632679);
+Integrate(50.) {}</textarea>
+                    <div class="centerize">
+                        <button id="interpret" type="button">Interpret!</button> 
+                    </div>
+                </form>
+            </section>
+        </main>
+    </body>
+</html>

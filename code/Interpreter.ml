@@ -3,12 +3,13 @@ open Hashtbl
 open Unix
 
 type program = Concat of program * program
-             | Draw of float * float * float * float
+             | Draw of float * float
+             | Set of float * float
              | Save of string
              | Load of string
              | Turn of float
-             | DiscreteRepeat of int * program
-             | Integrate of float * program
+             | DiscreteRepeat of int * program option
+             | Integrate of float * program option
              | Nop
 
 type internal = { mutable x : float
@@ -51,22 +52,27 @@ let pp_program program =
     let rec pp_helper program tabs = match program with
         | Concat (p1,p2) ->
             pp_helper p1 tabs ; print_endline " ;" ; pp_helper p2 tabs
-        | Draw (v, v', th, th') ->
-            Printf.printf "%sDraw(v=%s, v'=%s, theta=%s, theta'=%s)"
-                tabs (print_float v) (print_float v')
-                (print_float th) (print_float th')
+        | Set (v, th) ->
+            Printf.printf "%sSet(v=%s, theta=%s)"
+                tabs (print_float v) (print_float th)
+        | Draw (v', th') ->
+            Printf.printf "%sDraw(v'=%s, theta'=%s)"
+                tabs (print_float v') (print_float th')
         | Save name -> Printf.printf "%sSave '%s'" tabs name
         | Load name -> Printf.printf "%sLoad '%s'" tabs name
         | Turn f -> Printf.printf "%sTurn(%s)"
                         tabs (print_float f)
         | DiscreteRepeat (n,pr) ->
             Printf.printf "%sDiscreteRepeat %d {\n" tabs n ;
-            pp_helper pr (Printf.sprintf "%s  " tabs) ;
+            (match pr with
+                | Some pr -> pp_helper pr (Printf.sprintf "%s  " tabs)
+                | None -> ()) ;
             Printf.printf "\n%s}" tabs
         | Integrate (f, pr) ->
-            Printf.printf "%sIntegrate %s {\n"
-                tabs (print_float f) ;
-            pp_helper pr (Printf.sprintf "%s  " tabs) ;
+            Printf.printf "%sIntegrate %s {\n" tabs (print_float f) ;
+            (match pr with
+                | Some pr -> pp_helper pr (Printf.sprintf "%s  " tabs)
+                | None -> ()) ;
             Printf.printf "\n%s}" tabs
         | Nop -> ()
     in
@@ -96,10 +102,11 @@ let interpret program =
                         non-extistent variable %s!" name))
         | Turn f ->
             curr_state.face <- curr_state.face +. f
-        | Draw (v,v',th,th') ->
+        | Set (v,th) ->
                 curr_state.v <- v ;
+                curr_state.th <- th
+        | Draw (v',th') ->
                 curr_state.v' <- v' ;
-                curr_state.th <- th ;
                 curr_state.th' <- th'
         | Concat (p1,p2) ->
             inter p1 htbl curr_state ;
@@ -107,13 +114,16 @@ let interpret program =
         | DiscreteRepeat (n, pr) ->
             (match n with
                 | 0 -> ()
-                | n ->
-                    inter pr htbl curr_state ;
-                    inter (DiscreteRepeat(n-1, pr))
-                                htbl curr_state)
+                | n -> (match pr with
+                    | Some pr ->
+                        inter pr htbl curr_state ;
+                        inter (DiscreteRepeat(n-1, (Some pr))) htbl curr_state
+                    | None -> ()))
         | Integrate (f, pr) ->
-            inter pr htbl curr_state ;
             for i = 0 to (int_of_float f) do
+                (match pr with
+                    | Some pr -> inter pr htbl curr_state
+                    | None -> ()) ;
                 let futur_x =
                     curr_state.x
                  +. curr_state.v *. cos(curr_state.face)
@@ -136,7 +146,7 @@ let interpret program =
         { x = ((float_of_int (size_x ())) /. 2.)
         ; y = ((float_of_int (size_y ())) /. 2.)
         ; face = 0.
-        ; v = 0.
+        ; v = 1.
         ; v' = 0.
         ; th = 0.
         ; th' = 0. }

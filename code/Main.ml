@@ -18,17 +18,24 @@ let parse_with_error lexbuf =
     fprintf stderr "%a: syntax error\n" print_position lexbuf;
     exit (-1)
 
-let loop filename () =
-  let inx = open_in filename in
-  let lexbuf = Lexing.from_channel inx in
-  lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = filename };
+let read_program program_string =
+  let lexbuf = Lexing.from_string program_string in
   let program = parse_with_error lexbuf in
-  close_in inx ;
   program
+
+let file_to_string filename =
+    let ic = open_in filename in
+    let n = in_channel_length ic in
+    let s = Bytes.create n in
+    really_input ic s 0 n;
+    close_in ic;
+    s
 
 let () =
     open_graph "" ;
-    match (loop Sys.argv.(1) ()) with
+    (*let string_from_file = file_to_string (Sys.argv.(1)) in*)
+    let test = "Set(1.,0.01) ; Integrate(10000.) { }" in
+    match read_program test with
     | Some program ->
         moveto (size_x () / 2) (size_y () / 2) ;
         interpret program

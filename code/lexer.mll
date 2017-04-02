@@ -17,7 +17,7 @@ let int = '-'? ['0'-'9'] ['0'-'9']*
 let digit = ['0'-'9']
 let frac = '.' digit*
 let exp = ['e' 'E'] ['-' '+']? digit+
-let float = digit* frac? exp?
+let float = '-'? digit* frac? exp?
 
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
@@ -37,6 +37,7 @@ rule read =
   | ';'      { COLON }
   | "Turn"   { TURN }
   | "Draw"   { DRAW }
+  | "Set"    { SET }
   | "DiscreteRepeat"   { DISCRETE_REPEAT }
   | "Integrate"   { INTEGRATE }
   | "DiscreteRepeat"   { DISCRETE_REPEAT }
