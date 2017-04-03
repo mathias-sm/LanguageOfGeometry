@@ -5,3 +5,9 @@
 code/_build/*
 *.png
 *.log
+*.aux
+*.fls
+*.out
+*.pdf
+*.synctex*
+*.fdb_latexmk
