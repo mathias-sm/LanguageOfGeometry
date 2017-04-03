@@ -110,26 +110,11 @@
             <section>
                 <h2>Input</h2>
                 <form>
-                    <textarea id="program" rows="20">Save("Cou");
-Set(2,0.1);
-Integrate(100) {} ;
-Load("Cou");
-Turn(-pi/2);
-Integrate(25) {};
-Save("Bras");
-Integrate(75) {};
-Save("Hanches");
-Turn(-0.5);
-Integrate(75) {};
-Load("Hanches");
-Turn(0.5);
-Integrate(75) {};
-Load("Bras");
-Turn(pi/2);
-Integrate(50) {};
-Load("Bras");
-Turn(-pi/2);
-Integrate(50) {}</textarea>
+                    <textarea id="program" rows="10">Set(1, 0.1) ;
+Integrate (1000) {
+    Draw(0.05,0)
+}
+                    </textarea>
                     <div class="centerize">
                         <button id="interpret" type="button">Interpret!</button> 
                     </div>
