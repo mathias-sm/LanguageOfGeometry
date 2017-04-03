@@ -1,1 +1,4 @@
 *.byte
+*.native
+*.js
+*.swp
