@@ -2,3 +2,6 @@
 *.native
 *.js
 *.swp
+code/_build/*
+*.png
+*.log
