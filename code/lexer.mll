@@ -12,12 +12,9 @@ let next_line lexbuf =
     }
 }
 
-let int = '-'? ['0'-'9'] ['0'-'9']*
-
 let digit = ['0'-'9']
 let frac = '.' digit*
-let exp = ['e' 'E'] ['-' '+']? digit+
-let float = '-'? digit* frac? exp?
+let float = digit* frac?
 
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
@@ -26,13 +23,16 @@ rule read =
   parse
   | white    { read lexbuf }
   | newline  { next_line lexbuf; read lexbuf }
-  | int      { INT (int_of_string (Lexing.lexeme lexbuf)) }
   | float    { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
   | '"'      { read_string (Buffer.create 17) lexbuf }
   | '{'      { BEGIN_BLOCK }
   | '}'      { END_BLOCK }
   | '('      { BEGIN_ARGS }
   | ')'      { END_ARGS }
+  | '+'      { PLUS }
+  | '-'      { MINUS }
+  | '*'      { TIMES }
+  | '/'      { DIV }
   | ','      { COMMA_ARGS }
   | ';'      { COLON }
   | "Turn"   { TURN }
@@ -62,3 +62,4 @@ and read_string buf =
     }
   | _ { raise (SyntaxError ("Illegal string character: " ^ Lexing.lexeme lexbuf)) }
   | eof { raise (SyntaxError ("String is not terminated")) }
+

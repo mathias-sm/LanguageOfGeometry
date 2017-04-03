@@ -33,10 +33,10 @@ let file_to_string filename =
 
 let () =
     open_graph "" ;
-    (*let string_from_file = file_to_string (Sys.argv.(1)) in*)
-    let test = "Set(1.,0.01) ; Integrate(10000.) { }" in
-    match read_program test with
+    let string_from_file = file_to_string (Sys.argv.(1)) in
+    match read_program string_from_file with
     | Some program ->
         moveto (size_x () / 2) (size_y () / 2) ;
-        interpret program
+        interpret program ;
+        Unix.sleep 5
     | None -> failwith("Empty or malformed program")
