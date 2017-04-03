@@ -2,6 +2,9 @@ table, textarea {
     font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
     width:100%;
 }
+table {
+    padding-bottom:2em;
+}
 body{
     margin:40px auto;
     max-width:650px;

@@ -17,10 +17,15 @@
                 This is still unfinished. Many things that you may expect to
                 work are not. In a random order:
                 <ul>
-                    <li>There are <emph>no</emph> mathematical operation yet
-                        (i.e. 3*4 = ERROR, not 12)</li>
-                    <li>Every float needs a dot: 4 and 4. are not equal, nor
-                        interchangeable</li>
+                    <li><del>There are <emph>no</emph> mathematical operation yet
+                            (i.e. 3*4 = ERROR, not 12)</del>Basic operations
+                        are supported and pi=3.14159265359 (hardcoded)</li>
+                    <li><del>Every float needs a dot: 4 and 4. are not equal, nor
+                            interchangeable</del>The syntax for numbers should
+                        be intuitive, although the backend is free to do what
+                        it wants when converting floats to int (i.e. only in
+                        the DiscreteRepeat instruction). It <emph>should</emph>
+                        do what you expect though.
                     <li>This is still generally rough : the screen is limited,
                     and so are many things.</li>
                 </ul>
@@ -30,71 +35,73 @@
             <section>
                 <h2>Syntax</h2>
                 <table>
-                    <tbody>
-                        <tr>
-                            <td>Number<sub>int</sub></td>
-                            <td>::=</td>
-                            <td>|</td>
-                            <td>0, 1, 2, ...</td>
-                        </tr>
-                        <tr>
-                            <td>Number<sub>float</sub></td>
-                            <td>::=</td>
-                            <td>|</td>
-                            <td>Number<sub>int</sub>.Number<sub>int</sub></td>
-                        </tr>
-                        <tr>
-                            <td></td><td></td><td>|</td>
-                            <td>Number<sub>int</sub>.</td>
-                        </tr>
-                        <tr>
-                            <td>Number</td>
-                            <td>::=</td>
-                            <td>|</td>
-                            <td>Number<sub>int</sub> | Number<sub>float</sub> |
-                                Undefined</td>
-                        </tr>
-                    </tbody>
-                    <tbody>
-                        <tr>
-                            <td>Program</td>
-                            <td>::=</td>
-                            <td>|</td>
-                            <td>Program ; Program</td>
-                        </tr>
-                        <tr>
-                            <td></td><td></td><td>|</td>
-                            <td>Draw(Number<sub>float</sub>,Number<sub>float</sub>)</td>
-                        </tr>
-                        <tr>
-                            <td></td><td></td><td>|</td>
-                            <td>Set(Number<sub>float</sub>,Number<sub>float</sub>)</td>
-                        </tr>
-                        <tr>
-                            <td></td><td></td><td>|</td>
-                            <td>Save(string)</td>
-                        </tr>
-                        <tr>
-                            <td></td><td></td><td>|</td>
-                            <td>Load(string)</td>
-                        </tr>
-                        <tr>
-                            <td></td><td></td><td>|</td>
-                            <td>Turn(Number<sub>float</sub>)</td>
-                        </tr>
-                        <tr>
-                            <td></td><td></td><td>|</td>
-                            <td>DiscreteRepeat(Number<sub>int</sub>) { Program }</td>
-                        </tr>
-                        <tr>
-                            <td></td><td></td><td>|</td>
-                            <td>Integrate(Number<sub>float</sub>) { Program }</td>
-                        </tr>
-                        <tr>
-                            <td></td><td></td><td>|</td>
-                            <td>{}</td>
-                        </tr>
-                    </tbody>
+                    <tr>
+                        <td>Number</td>
+                        <td>::=</td>
+                        <td>|</td>
+                        <td>0, 1, 2, -1, 1.5, pi, ...</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>|</td>
+                        <td>Number + Number |
+                            Number - Number </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>|</td>
+                        <td>
+                            Number * Number |
+                            Number / Number </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>|</td>
+                        <td>Undefined</td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td>Program</td>
+                        <td>::=</td>
+                        <td>|</td>
+                        <td>Program ; Program</td>
+                    </tr>
+                    <tr>
+                        <td></td><td></td><td>|</td>
+                        <td>Draw(Number,Number)</td>
+                    </tr>
+                    <tr>
+                        <td></td><td></td><td>|</td>
+                        <td>Set(Number,Number)</td>
+                    </tr>
+                    <tr>
+                        <td></td><td></td><td>|</td>
+                        <td>Save(string)</td>
+                    </tr>
+                    <tr>
+                        <td></td><td></td><td>|</td>
+                        <td>Load(string)</td>
+                    </tr>
+                    <tr>
+                        <td></td><td></td><td>|</td>
+                        <td>Turn(Number)</td>
+                    </tr>
+                    <tr>
+                        <td></td><td></td><td>|</td>
+                        <td>DiscreteRepeat(Number) { Program }</td>
+                    </tr>
+                    <tr>
+                        <td></td><td></td><td>|</td>
+                        <td>Integrate(Number) { Program }</td>
+                    </tr>
+                    <tr>
+                        <td></td><td></td><td>|</td>
+                        <td>{}</td>
+                    </tr>
                 </table>
             </section>
             <section>
