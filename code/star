@@ -1,6 +1,0 @@
-Save("center") ;
-DiscreteRepeat(10) {
-    Integrate(100.) { } ;
-    Turn(0.314) ;
-    Load("center")
-}
