@@ -1,5 +1,6 @@
 %token <float> FLOAT
 %token <string> STRING
+%token <string> VAR
 %token BEGIN_BLOCK
 %token END_BLOCK
 %token BEGIN_ARGS
@@ -11,13 +12,13 @@
 %token SAVE
 %token LOAD
 %token TURN
-%token DRAW
 %token PLUS
 %token MINUS
 %token TIMES
 %token DIV
-%token SET
 %token EOF
+%token SETVALUES
+%token EQUALS
 
 %start <Interpreter.program option> program
 %%
@@ -34,18 +35,74 @@ expr:
     | a = expr DIV b = expr { a /. b }
     | MINUS b = expr { -. b }
 
+
 value:
     | TURN ; BEGIN_ARGS ; n = expr ; END_ARGS {Interpreter.Turn n}
     | SAVE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Save s}
     | LOAD ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Load s}
-    | SET ; BEGIN_ARGS ; n1 = expr ; COMMA_ARGS ; n2 = expr ; END_ARGS
-        {Interpreter.Set(n1,n2)}
-    | DRAW ; BEGIN_ARGS ; n1 = expr ; COMMA_ARGS ; n2 = expr ; END_ARGS
-        {Interpreter.Draw(n1,n2)}
-    | INTEGRATE ; BEGIN_ARGS ; n = expr ; END_ARGS ; BEGIN_BLOCK ; END_BLOCK
-        {Interpreter.Integrate (n,None)}
-    | INTEGRATE ; BEGIN_ARGS ; n = expr ; END_ARGS ; BEGIN_BLOCK ; p = value ;
-        END_BLOCK {Interpreter.Integrate (n,(Some p))}
+    | SETVALUES ; BEGIN_ARGS ; END_ARGS {Interpreter.SetValues(1.,0.,0.,0.)}
+    | SETVALUES ; BEGIN_ARGS ; var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
+        {let vars = [var4] in
+         let assoc = [var4,n4] in
+         let m1 = (try List.assoc (List.find (String.equal "v'") vars) assoc
+                   with Not_found -> 1.) in
+         let m2 = (try List.assoc (List.find (String.equal "t'") vars) assoc
+                   with Not_found -> 0.) in
+         let m3 = (try List.assoc (List.find (String.equal "v''") vars) assoc
+                   with Not_found -> 0.) in
+         let m4 = (try List.assoc (List.find (String.equal "t''") vars) assoc
+                   with Not_found -> 0.) in
+         Interpreter.SetValues(m1,m2,m3,m4)}
+    | SETVALUES ; BEGIN_ARGS ;
+        var3 = VAR ; EQUALS ; n3 = expr ; COMMA_ARGS
+        var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
+        {
+         let vars = [var3;var4] in
+         let assoc = [var3,n3;var4,n4] in
+         let m1 = (try List.assoc (List.find (String.equal "v'") vars) assoc
+                   with Not_found -> 1.) in
+         let m2 = (try List.assoc (List.find (String.equal "t'") vars) assoc
+                   with Not_found -> 0.) in
+         let m3 = (try List.assoc (List.find (String.equal "v''") vars) assoc
+                   with Not_found -> 0.) in
+         let m4 = (try List.assoc (List.find (String.equal "t''") vars) assoc
+                   with Not_found -> 0.) in
+         Interpreter.SetValues(m1,m2,m3,m4)}
+    | SETVALUES ; BEGIN_ARGS ;
+        var2 = VAR ; EQUALS ; n2 = expr ; COMMA_ARGS
+        var3 = VAR ; EQUALS ; n3 = expr ; COMMA_ARGS
+        var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
+        {
+         let vars = [var2;var3;var4] in
+         let assoc = [var2,n2;var3,n3;var4,n4] in
+         let m1 = (try List.assoc (List.find (String.equal "v'") vars) assoc
+                   with Not_found -> 1.) in
+         let m2 = (try List.assoc (List.find (String.equal "t'") vars) assoc
+                   with Not_found -> 0.) in
+         let m3 = (try List.assoc (List.find (String.equal "v''") vars) assoc
+                   with Not_found -> 0.) in
+         let m4 = (try List.assoc (List.find (String.equal "t''") vars) assoc
+                   with Not_found -> 0.) in
+         Interpreter.SetValues(m1,m2,m3,m4)}
+    | SETVALUES ; BEGIN_ARGS ;
+        var1 = VAR; EQUALS ; n1 = expr ; COMMA_ARGS
+        var2 = VAR ; EQUALS ; n2 = expr ; COMMA_ARGS
+        var3 = VAR ; EQUALS ; n3 = expr ; COMMA_ARGS
+        var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
+        {
+         let vars = [var1;var2;var3;var4] in
+         let assoc = [var1,n1;var2,n2;var3,n3;var4,n4] in
+         let m1 = (try List.assoc (List.find (String.equal "v'") vars) assoc
+                   with Not_found -> 1.) in
+         let m2 = (try List.assoc (List.find (String.equal "t'") vars) assoc
+                   with Not_found -> 0.) in
+         let m3 = (try List.assoc (List.find (String.equal "v''") vars) assoc
+                   with Not_found -> 0.) in
+         let m4 = (try List.assoc (List.find (String.equal "t''") vars) assoc
+                   with Not_found -> 0.) in
+         Interpreter.SetValues(m1,m2,m3,m4)}
+    | INTEGRATE ; BEGIN_ARGS ; n = expr ; END_ARGS
+        {Interpreter.Integrate (n)}
     | p1 = value ; COLON ; p2 = value {Interpreter.Concat (p1,p2)}
     | DISCRETE_REPEAT ; BEGIN_ARGS ; n = expr ; END_ARGS ; BEGIN_BLOCK ; p = value ;
         END_BLOCK {Interpreter.DiscreteRepeat ((int_of_float n),(Some p))}

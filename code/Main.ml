@@ -4,6 +4,8 @@ open Printf
 open Lexer
 open Lexing
 
+Random.self_init ()
+
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
   fprintf outx "%s:%d:%d" pos.pos_fname
@@ -36,7 +38,8 @@ let () =
     let string_from_file = file_to_string (Sys.argv.(1)) in
     match read_program string_from_file with
     | Some program ->
+        pp_program program ;
         moveto (size_x () / 2) (size_y () / 2) ;
-        interpret program ;
+        interpret program 100000. ;
         Unix.sleep 5
     | None -> failwith("Empty or malformed program")

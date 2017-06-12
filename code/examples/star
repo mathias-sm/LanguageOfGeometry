@@ -1,6 +1,6 @@
 Save("centre") ;
 DiscreteRepeat(10) {
-    Integrate(100) {} ;
+    Integrate(100) ;
     Load("centre") ;
     Turn(2*pi/10) ;
     Save("centre")

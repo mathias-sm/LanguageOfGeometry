@@ -1,15 +1,15 @@
 open Graphics
 open Hashtbl
 open Unix
+open Random
 
 type program = Concat of program * program
-             | Draw of float * float
-             | Set of float * float
+             | SetValues of float * float * float * float
              | Save of string
              | Load of string
              | Turn of float
              | DiscreteRepeat of int * program option
-             | Integrate of float * program option
+             | Integrate of float
              | Nop
 
 type internal = { mutable x : float
@@ -27,6 +27,8 @@ let pi2 = pi /. 2.
 let pi4 = pi /. 4.
 
 let (++) pr1 pr2 = Concat(pr1, pr2)
+
+let random_normal () = sqrt(-2.*.log(Random.float 1.))*.cos(2.*.pi*.Random.float 1.)
 
 let replace curr future =
     curr.x <- future.x ;
@@ -52,12 +54,9 @@ let pp_program program =
     let rec pp_helper program tabs = match program with
         | Concat (p1,p2) ->
             pp_helper p1 tabs ; print_endline " ;" ; pp_helper p2 tabs
-        | Set (v, th) ->
-            Printf.printf "%sSet(v=%s, theta=%s)"
-                tabs (print_float v) (print_float th)
-        | Draw (v', th') ->
-            Printf.printf "%sDraw(v'=%s, theta'=%s)"
-                tabs (print_float v') (print_float th')
+        | SetValues (v', th', v'', th'') ->
+            Printf.printf "%sSetValues(v'=%s, theta'=%s, v''=%s, th''=%s)"
+                tabs (print_float v') (print_float th') (print_float v'') (print_float th'')
         | Save name -> Printf.printf "%sSave '%s'" tabs name
         | Load name -> Printf.printf "%sLoad '%s'" tabs name
         | Turn f -> Printf.printf "%sTurn(%s)"
@@ -68,12 +67,8 @@ let pp_program program =
                 | Some pr -> pp_helper pr (Printf.sprintf "%s  " tabs)
                 | None -> ()) ;
             Printf.printf "\n%s}" tabs
-        | Integrate (f, pr) ->
-            Printf.printf "%sIntegrate %s {\n" tabs (print_float f) ;
-            (match pr with
-                | Some pr -> pp_helper pr (Printf.sprintf "%s  " tabs)
-                | None -> ()) ;
-            Printf.printf "\n%s}" tabs
+        | Integrate (f) ->
+            Printf.printf "%sIntegrate %s" tabs (print_float f) ;
         | Nop -> ()
     in
     print_endline "### PROGRAM DEBUG PRINT ###" ;
@@ -82,7 +77,7 @@ let pp_program program =
     print_endline "###  PROGRAM DEBIG END  ###" ;
     print_newline ()
 
-let interpret program =
+let interpret program noise_level =
     let rec inter program htbl curr_state =
         match program with
         | Save name ->
@@ -102,12 +97,11 @@ let interpret program =
                         non-extistent variable %s!" name))
         | Turn f ->
             curr_state.face <- curr_state.face +. f
-        | Set (v,th) ->
-                curr_state.v <- v ;
-                curr_state.th <- th
-        | Draw (v',th') ->
-                curr_state.v' <- v' ;
-                curr_state.th' <- th'
+        | SetValues (v,th,v',th') ->
+            curr_state.v <- v ;
+            curr_state.th <- th ;
+            curr_state.v' <- v' ;
+            curr_state.th' <- th'
         | Concat (p1,p2) ->
             inter p1 htbl curr_state ;
             inter p2 htbl curr_state
@@ -119,17 +113,16 @@ let interpret program =
                         inter pr htbl curr_state ;
                         inter (DiscreteRepeat(n-1, (Some pr))) htbl curr_state
                     | None -> ()))
-        | Integrate (f, pr) ->
+        | Integrate (f) ->
             for i = 0 to (int_of_float f) do
-                (match pr with
-                    | Some pr -> inter pr htbl curr_state
-                    | None -> ()) ;
                 let futur_x =
                     curr_state.x
-                 +. curr_state.v *. cos(curr_state.face)
+                 +. curr_state.v *. cos(curr_state.face) +. random_normal () /.
+                 3.
                 and futur_y =
                     curr_state.y
-                 +. curr_state.v *. sin(curr_state.face) in
+                 +. curr_state.v *. sin(curr_state.face) +. random_normal () /.
+            3. in
                 lineto (int_of_float futur_x)
                        (int_of_float futur_y) ;
                 curr_state.x <- futur_x ;
@@ -137,9 +130,11 @@ let interpret program =
                 curr_state.face <-
                     curr_state.face +. curr_state.th ;
                 curr_state.v <-
-                    curr_state.v +. curr_state.v' ;
+                    curr_state.v +. curr_state.v' +. random_normal () /.
+                    noise_level ;
                 curr_state.th <-
-                    curr_state.th +. curr_state.th'
+                    curr_state.th +. curr_state.th' +. random_normal () /.
+                    noise_level ;
             done
         | Nop -> ()
     in let initial_state =

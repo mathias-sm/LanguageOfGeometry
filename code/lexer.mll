@@ -35,11 +35,15 @@ rule read =
   | '/'      { DIV }
   | ','      { COMMA_ARGS }
   | ';'      { COLON }
+  | '='      { EQUALS }
+  | "v'"     { VAR "v'" }
+  | "t'"     { VAR "t'" }
+  | "v''"    { VAR "v''" }
+  | "t''"    { VAR "t''" }
   | "pi"     { FLOAT (3.14159265359) }
-  | "π"     { FLOAT (3.14159265359) }
+  | "π"      { FLOAT (3.14159265359) }
   | "Turn"   { TURN }
-  | "Draw"   { DRAW }
-  | "Set"    { SET }
+  | "SetValues" {SETVALUES}
   | "DiscreteRepeat"   { DISCRETE_REPEAT }
   | "Integrate"   { INTEGRATE }
   | "DiscreteRepeat"   { DISCRETE_REPEAT }

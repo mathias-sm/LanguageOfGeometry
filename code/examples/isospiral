@@ -1,4 +1,2 @@
-Set(1.,0.1) ;
-Integrate(10000.) {
-    Draw(0.05,0.)
-}
+SetValues(t'=0.1,v''=0.05) ;
+Integrate(10000.)
