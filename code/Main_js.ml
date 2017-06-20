@@ -80,8 +80,8 @@ let start _ =
   Lwt.ignore_result
     (
      let doc = Html.document in
-     let w = 500 in
-     let h = 500 in
+     let w = 800 in
+     let h = 800 in
      let canvas = create_canvas w h in
      Dom.appendChild doc##body canvas;
      let c = canvas##getContext (Html._2d_) in
