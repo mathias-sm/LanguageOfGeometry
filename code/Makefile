@@ -5,7 +5,7 @@ native:
 	ocamlbuild -use-menhir -tag thread -use-ocamlfind -package js_of_ocaml.graphics -package js_of_ocaml.syntax -syntax camlp4o -plugin-tag "package(js_of_ocaml.ocamlbuild)" Main.native
 
 html:
-	pandoc -s -S --toc -c style.css whitePaper.md -t html5 -o index.html
+	pandoc -s -S --toc -c style.css whitePaper.md --from markdown-markdown_in_html_blocks+raw_html -t html5 -o index.html
 
 clean:
 	rm -Rv *.byte *.js *.native _build/
