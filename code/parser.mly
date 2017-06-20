@@ -27,7 +27,7 @@
 %%
 program:
     | EOF       { None }
-    | n = noises COLON v = value ; EOF { Some (n,v) }
+    | n = noises ; v = value ; EOF { Some (n,v) }
 ;
 
 expr:
@@ -39,9 +39,9 @@ expr:
     | MINUS b = expr { -. b }
 
 noises:
-    | {(10. ** 0.7,10. ** 4.,10. ** 4.)}
+    | {(10. ** 0.7,10. ** 5.,10. ** 5.)}
     | NOISE1 EQUALS n1=expr COMMA_ARGS NOISE2 EQUALS n2=expr COMMA_ARGS NOISE3 EQUALS
-    n3=expr {(10. ** n1,10. ** n2,10. ** n3)}
+    n3=expr COLON {(10. ** n1,10. ** n2,10. ** n3)}
 
 value:
     | TURN ; BEGIN_ARGS ; n = expr ; END_ARGS {Interpreter.Turn n}
@@ -51,13 +51,13 @@ value:
     | SETVALUES ; BEGIN_ARGS ; var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
         {let vars = [var4] in
          let assoc = [var4,n4] in
-         let m1 = (try List.assoc (List.find (String.equal "v'") vars) assoc
+         let m1 = (try List.assoc (List.find (String.equal "speed") vars) assoc
                    with Not_found -> 1.) in
-         let m2 = (try List.assoc (List.find (String.equal "t'") vars) assoc
+         let m2 = (try List.assoc (List.find (String.equal "curv") vars) assoc
                    with Not_found -> 0.) in
-         let m3 = (try List.assoc (List.find (String.equal "v''") vars) assoc
+         let m3 = (try List.assoc (List.find (String.equal "accel") vars) assoc
                    with Not_found -> 0.) in
-         let m4 = (try List.assoc (List.find (String.equal "t''") vars) assoc
+         let m4 = (try List.assoc (List.find (String.equal "curv'") vars) assoc
                    with Not_found -> 0.) in
          Interpreter.SetValues(m1,m2,m3,m4)}
     | SETVALUES ; BEGIN_ARGS ;
@@ -66,13 +66,13 @@ value:
         {
          let vars = [var3;var4] in
          let assoc = [var3,n3;var4,n4] in
-         let m1 = (try List.assoc (List.find (String.equal "v'") vars) assoc
+         let m1 = (try List.assoc (List.find (String.equal "speed") vars) assoc
                    with Not_found -> 1.) in
-         let m2 = (try List.assoc (List.find (String.equal "t'") vars) assoc
+         let m2 = (try List.assoc (List.find (String.equal "curv") vars) assoc
                    with Not_found -> 0.) in
-         let m3 = (try List.assoc (List.find (String.equal "v''") vars) assoc
+         let m3 = (try List.assoc (List.find (String.equal "accel") vars) assoc
                    with Not_found -> 0.) in
-         let m4 = (try List.assoc (List.find (String.equal "t''") vars) assoc
+         let m4 = (try List.assoc (List.find (String.equal "curv'") vars) assoc
                    with Not_found -> 0.) in
          Interpreter.SetValues(m1,m2,m3,m4)}
     | SETVALUES ; BEGIN_ARGS ;
@@ -82,13 +82,13 @@ value:
         {
          let vars = [var2;var3;var4] in
          let assoc = [var2,n2;var3,n3;var4,n4] in
-         let m1 = (try List.assoc (List.find (String.equal "v'") vars) assoc
+         let m1 = (try List.assoc (List.find (String.equal "speed") vars) assoc
                    with Not_found -> 1.) in
-         let m2 = (try List.assoc (List.find (String.equal "t'") vars) assoc
+         let m2 = (try List.assoc (List.find (String.equal "curv") vars) assoc
                    with Not_found -> 0.) in
-         let m3 = (try List.assoc (List.find (String.equal "v''") vars) assoc
+         let m3 = (try List.assoc (List.find (String.equal "accel") vars) assoc
                    with Not_found -> 0.) in
-         let m4 = (try List.assoc (List.find (String.equal "t''") vars) assoc
+         let m4 = (try List.assoc (List.find (String.equal "curv'") vars) assoc
                    with Not_found -> 0.) in
          Interpreter.SetValues(m1,m2,m3,m4)}
     | SETVALUES ; BEGIN_ARGS ;
@@ -99,13 +99,13 @@ value:
         {
          let vars = [var1;var2;var3;var4] in
          let assoc = [var1,n1;var2,n2;var3,n3;var4,n4] in
-         let m1 = (try List.assoc (List.find (String.equal "v'") vars) assoc
+         let m1 = (try List.assoc (List.find (String.equal "speed") vars) assoc
                    with Not_found -> 1.) in
-         let m2 = (try List.assoc (List.find (String.equal "t'") vars) assoc
+         let m2 = (try List.assoc (List.find (String.equal "curv") vars) assoc
                    with Not_found -> 0.) in
-         let m3 = (try List.assoc (List.find (String.equal "v''") vars) assoc
+         let m3 = (try List.assoc (List.find (String.equal "accel") vars) assoc
                    with Not_found -> 0.) in
-         let m4 = (try List.assoc (List.find (String.equal "t''") vars) assoc
+         let m4 = (try List.assoc (List.find (String.equal "curv'") vars) assoc
                    with Not_found -> 0.) in
          Interpreter.SetValues(m1,m2,m3,m4)}
     | INTEGRATE ; BEGIN_ARGS ; n = expr ; END_ARGS

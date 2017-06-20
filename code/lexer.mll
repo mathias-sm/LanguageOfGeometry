@@ -36,10 +36,6 @@ rule read =
   | ','      { COMMA_ARGS }
   | ';'      { COLON }
   | '='      { EQUALS }
-  | "v'"     { VAR "v'" }
-  | "t'"     { VAR "t'" }
-  | "v''"    { VAR "v''" }
-  | "t''"    { VAR "t''" }
   | "pi"     { FLOAT (3.14159265359) }
   | "π"      { FLOAT (3.14159265359) }
   | "Turn"   { TURN }
@@ -52,6 +48,10 @@ rule read =
   | "POSITION_NOISE" {NOISE1}
   | "ACCELERATION_NOISE" {NOISE2}
   | "SECOND_ORDER_NOISE" {NOISE3}
+  | "speed"     { VAR "speed" }
+  | "curv"     { VAR "curv" }
+  | "accel"    { VAR "accel" }
+  | "curv'"    { VAR "curv'" }
   | eof      { EOF }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
 
