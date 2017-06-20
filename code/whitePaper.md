@@ -37,30 +37,29 @@ Syntax
 ------
 
 
-|         |     |                                                                                  |
-| ------  | --- | -------------------------                                                        |
-| Number  | ::= | &#124; 0, 1, 2, -1, 1.5, pi, ...                                                 |
-|         |     |                                                                                  |
-|         |     | &#124; Number + Number                                                           |
-|         |     | &#124; Number - Number                                                           |
-|         |     |                                                                                  |
-|         |     | &#124; Number \* Number                                                          |
-|         |     | &#124; Number / Number                                                           |
-|         |     |                                                                                  |
-|         |     |                                                                                  |
-| Noises  | ::= | POSITION_NOISE=Number,ACCELERATION_NOISE=Number,SECOND_ORDER_NOISE=Number |
-|         |     |                                                                                  |
-|         |     |                                                                                  |
-| Body    | ::= | &#124; Body ; Body                                                               |
-|         |     | &#124; SetValues(t'=Number,v'=Number,v''=Number,t''=Number)                      |
-|         |     | &#124; Save(string)                                                              |
-|         |     | &#124; Load(string)                                                              |
-|         |     | &#124; Turn(Number)                                                              |
-|         |     | &#124; DiscreteRepeat(Number) { Body }                                           |
-|         |     | &#124; Integrate(Number)                                                         |
-|         |     | &#124; {}                                                                        |
-| Program | ::= | &#124; Noises ; Body                                                             |
-|         |     | &#124; Body                                                                      |
+|         |       |                                                                |
+| :------ | :---: | :------------------------------------------------------------- |
+| Number  | ::=   | &#124; 0, 1, 2, -1, 1.5, pi, ...                               |
+|         |       | &#124; Number + Number                                         |
+|         |       | &#124; Number - Number                                         |
+|         |       | &#124; Number \* Number                                        |
+|         |       | &#124; Number / Number                                         |
+|         |       |                                                                |
+| Noises  | ::=   | &#124; POSITION_NOISE=Number,                                  |
+|         |       |   ACCELERATION_NOISE=Number,                                   |
+|         |       |   SECOND_ORDER_NOISE=Number                                    |
+|         |       |                                                                |
+| Body    | ::=   | &#124; Body ; Body                                             |
+|         |       | &#124; SetValues(t'=Number,v'=Number,v''=Number,t''=Number)    |
+|         |       | &#124; Save(string)                                            |
+|         |       | &#124; Load(string)                                            |
+|         |       | &#124; Turn(Number)                                            |
+|         |       | &#124; DiscreteRepeat(Number) { Body }                         |
+|         |       | &#124; Integrate(Number)                                       |
+|         |       | &#124; {}                                                      |
+|         |       |                                                                |
+| Program | ::=   | &#124; Noises ; Body                                           |
+|         |       | &#124; Body                                                    |
 
 
 Intuitive Semantics
@@ -94,7 +93,7 @@ instruction. Let us detail these a bit more.
 These two instructions are used to respectively store and restore the current
 context, or continuation. You can see it used in both the person example, with
 a very simple use case of keeping positions stored, and in the star example
-where it is dynamically over-written.
+where it is dynamically over written.
 
 #### `DiscreteRepeat(Number) { Program }`
 
@@ -108,6 +107,39 @@ play around with `Save` and `Load`.
 
 #### `SetValues(...)` & `Integrate(Number)`
 
+These are the core instructions to understand. Imagine the program as a set of
+instructions for your hand, holding a pencil, drawing something on a piece of
+paper: `SetValues(...)` prepares the movement, the acceleration, and so on,
+while `Integrate(Number)` executes it during an arbitrary unit of **time**.
+
+More specifically, you can set four values with SetValues (the order doesn't matter and there are default values for the forgotten one):
+
+ * **s** is the speed
+ * **a** is the acceleration
+ * **t** is the curvature (t stands for &#952;)
+ * **t**' is the variation of the curvature
+
+
+The default values are respectively `s = 1`, `a = 0`, `t = 0` and `t' = 0`
+which means that if you `Integrate(100)` without changing anything, you'll go
+straight forward at constant speed for 100 units of times.
+
+#### `Turn(Number)`
+
+This operates an *on the spot* rotation of the hand, the angle depending on the
+argument. The square example is the most straightforward use of this
+instruction.
+
+*Remark*: this is syntactic sugar in terms of semantics with `Turn(θ)` being
+the same as `SetValues(s=0,t=θ) ; Integrate(1)`
+
+Formal Semantics
+----------------
+
+As everything is not completely decided yet, the semantics of a program at any
+given moment is given by its operation semantics for the available interpreter
+I wrote. This is going to change one we move on to adding complexity, because
+by this time the semantics will need to be fully specified.
 
 Input
 -----
@@ -115,8 +147,11 @@ Input
 You may look for inspiration [here](./examples/)
 
 <form><textarea id="program" rows="10">
-SetValues(v'=1.5,t''=0.0001) ;
-Integrate(600.)
+POSITION_NOISE=0.7,ACCELERATION_NOISE=5,SECOND_ORDER_NOISE=5;
+DiscreteRepeat(4) {
+    Integrate(200) ;
+    Turn(pi/2)
+}
 </textarea><div class="centerize"><button id="interpret" type="button">Interpret!</button> </div></form>
 
 
