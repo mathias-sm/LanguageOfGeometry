@@ -77,7 +77,7 @@ let pp_program program =
     print_endline "###  PROGRAM DEBIG END  ###" ;
     print_newline ()
 
-let interpret program noise_level =
+let interpret program n1 n2 n3 =
     let rec inter program htbl curr_state =
         match program with
         | Save name ->
@@ -117,24 +117,25 @@ let interpret program noise_level =
             for i = 0 to (int_of_float f) do
                 let futur_x =
                     curr_state.x
-                 +. curr_state.v *. cos(curr_state.face) +. random_normal () /.
-                 3.
+                 +. curr_state.v *. cos(curr_state.face)
+                 +. random_normal () /. n1
                 and futur_y =
                     curr_state.y
-                 +. curr_state.v *. sin(curr_state.face) +. random_normal () /.
-            3. in
+                 +. curr_state.v *. sin(curr_state.face)
+                 +. random_normal () /. n1 in
                 lineto (int_of_float futur_x)
                        (int_of_float futur_y) ;
                 curr_state.x <- futur_x ;
                 curr_state.y <- futur_y ;
                 curr_state.face <-
-                    curr_state.face +. curr_state.th ;
+                    curr_state.face +. curr_state.th
+                    +. random_normal () /. n2 ;
                 curr_state.v <-
-                    curr_state.v +. curr_state.v' +. random_normal () /.
-                    noise_level ;
+                    curr_state.v +. curr_state.v'
+                    +. random_normal () /. n3 ;
                 curr_state.th <-
-                    curr_state.th +. curr_state.th' +. random_normal () /.
-                    noise_level ;
+                    curr_state.th +. curr_state.th'
+                    +. random_normal () /. n3 ;
             done
         | Nop -> ()
     in let initial_state =

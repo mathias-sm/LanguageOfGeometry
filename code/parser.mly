@@ -15,16 +15,19 @@
 %token PLUS
 %token MINUS
 %token TIMES
+%token NOISE1
+%token NOISE2
+%token NOISE3
 %token DIV
 %token EOF
 %token SETVALUES
 %token EQUALS
 
-%start <Interpreter.program option> program
+%start <((float*float*float)*Interpreter.program) option> program
 %%
 program:
     | EOF       { None }
-    | v = value ; EOF { Some v }
+    | n = noises ; v = value ; EOF { Some (n,v) }
 ;
 
 expr:
@@ -35,6 +38,10 @@ expr:
     | a = expr DIV b = expr { a /. b }
     | MINUS b = expr { -. b }
 
+noises:
+    | {(1.,1.,1.)}
+    | NOISE1 EQUALS n1=expr COMMA_ARGS NOISE2 EQUALS n2=expr COMMA_ARGS NOISE3 EQUALS
+    n3=expr {(n1,n2,n3)}
 
 value:
     | TURN ; BEGIN_ARGS ; n = expr ; END_ARGS {Interpreter.Turn n}

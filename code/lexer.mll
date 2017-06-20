@@ -49,6 +49,9 @@ rule read =
   | "DiscreteRepeat"   { DISCRETE_REPEAT }
   | "Save"   { SAVE }
   | "Load"   { LOAD }
+  | "POSITION_NOISE" {NOISE1}
+  | "ACCELERATION_NOISE" {NOISE2}
+  | "SECOND_ORDER_NOISE" {NOISE3}
   | eof      { EOF }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
 

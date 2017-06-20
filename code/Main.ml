@@ -37,9 +37,9 @@ let () =
     open_graph "" ;
     let string_from_file = file_to_string (Sys.argv.(1)) in
     match read_program string_from_file with
-    | Some program ->
+    | Some ((n1,n2,n3),program) ->
         pp_program program ;
         moveto (size_x () / 2) (size_y () / 2) ;
-        interpret program 100000. ;
+        interpret program n1 n2 n3 ;
         Unix.sleep 5
     | None -> failwith("Empty or malformed program")
