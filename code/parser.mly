@@ -27,7 +27,7 @@
 %%
 program:
     | EOF       { None }
-    | n = noises ; v = value ; EOF { Some (n,v) }
+    | n = noises COLON v = value ; EOF { Some (n,v) }
 ;
 
 expr:
@@ -39,9 +39,9 @@ expr:
     | MINUS b = expr { -. b }
 
 noises:
-    | {(1.,1.,1.)}
+    | {(10. ** 0.7,10. ** 4.,10. ** 4.)}
     | NOISE1 EQUALS n1=expr COMMA_ARGS NOISE2 EQUALS n2=expr COMMA_ARGS NOISE3 EQUALS
-    n3=expr {(n1,n2,n3)}
+    n3=expr {(10. ** n1,10. ** n2,10. ** n3)}
 
 value:
     | TURN ; BEGIN_ARGS ; n = expr ; END_ARGS {Interpreter.Turn n}

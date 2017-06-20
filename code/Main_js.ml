@@ -71,7 +71,7 @@ let drawProgram truc =
     let textarea_jstring = textarea_coerced##value in
     let program_string = Js.to_string textarea_jstring in
     (match read_program program_string with
-        | Some program -> interpret program 100000.
+        | Some ((n1,n2,n3), program) -> interpret program n1 n2 n3
         | None -> failwith("Program NOT OK")) ;
     Js._true
 
