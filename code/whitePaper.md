@@ -37,29 +37,29 @@ Syntax
 ------
 
 
-|         |       |                                                                |
-| :------ | :---: | :------------------------------------------------------------- |
-| Number  | ::=   | &#124; 0, 1, 2, -1, 1.5, pi, ...                               |
-|         |       | &#124; Number + Number                                         |
-|         |       | &#124; Number - Number                                         |
-|         |       | &#124; Number \* Number                                        |
-|         |       | &#124; Number / Number                                         |
-|         |       |                                                                |
-| Noises  | ::=   | &#124; POSITION_NOISE=Number,                                  |
-|         |       |   ACCELERATION_NOISE=Number,                                   |
-|         |       |   SECOND_ORDER_NOISE=Number                                    |
-|         |       |                                                                |
-| Body    | ::=   | &#124; Body ; Body                                             |
-|         |       | &#124; SetValues(t'=Number,v'=Number,v''=Number,t''=Number)    |
-|         |       | &#124; Save(string)                                            |
-|         |       | &#124; Load(string)                                            |
-|         |       | &#124; Turn(Number)                                            |
-|         |       | &#124; DiscreteRepeat(Number) { Body }                         |
-|         |       | &#124; Integrate(Number)                                       |
-|         |       | &#124; {}                                                      |
-|         |       |                                                                |
-| Program | ::=   | &#124; Noises ; Body                                           |
-|         |       | &#124; Body                                                    |
+|         |       |                                                          |
+| :------ | :---: | :------------------------------------------------------- |
+| Num     | ::=   | &#124; 0, 1, 2, -1, 1.5, pi, ...                         |
+|         |       | &#124; Num + Num                                         |
+|         |       | &#124; Num - Num                                         |
+|         |       | &#124; Num \* Num                                        |
+|         |       | &#124; Num / Num                                         |
+|         |       |                                                          |
+| Noises  | ::=   | &#124; POSITION_NOISE=Num,                               |
+|         |       |   ACCELERATION_NOISE=Num,                                |
+|         |       |   SECOND_ORDER_NOISE=Number                              |
+|         |       |                                                          |
+| Body    | ::=   | &#124; Body ; Body                                       |
+|         |       | &#124; SetValues(speed=Num,accel=Num,curv=Num,curv'=Num) |
+|         |       | &#124; Save(string)                                      |
+|         |       | &#124; Load(string)                                      |
+|         |       | &#124; Turn(Num)                                      |
+|         |       | &#124; DiscreteRepeat(Num) { Body }                   |
+|         |       | &#124; Integrate(Num)                                 |
+|         |       | &#124; {}                                                |
+|         |       |                                                          |
+| Program | ::=   | &#124; Noises ; Body                                     |
+|         |       | &#124; Body                                              |
 
 
 Design Choices --- Informal Semantics
@@ -95,9 +95,9 @@ context, or continuation. You can see it used in both the person example, with
 a very simple use case of keeping positions stored, and in the star example
 where it is dynamically over written.
 
-#### `DiscreteRepeat(Number) { Program }`
+#### `DiscreteRepeat(Num) { Program }`
 
-This takes a Number as an argument, arbitrarily transforms it to an integer (it
+This takes a Num as an argument, arbitrarily transforms it to an integer (it
 just usually rounds it down, don't worry. See OCaml's Pervasive.int_of_float
 for more details), executes the given Program the specified mount of time.
 
@@ -105,12 +105,12 @@ Note that it only concatenates the program so far: if you want to play with
 backtracking, repetitions with/without modifications, and so on, you have to
 play around with `Save` and `Load`.
 
-#### `SetValues(...)` & `Integrate(Number)`
+#### `SetValues(...)` & `Integrate(Num)`
 
 These are the core instructions to understand. Imagine the program as a set of
 instructions for your hand, holding a pencil, drawing something on a piece of
 paper: `SetValues(...)` prepares the movement, the acceleration, and so on,
-while `Integrate(Number)` executes it during an arbitrary unit of **time**.
+while `Integrate(Num)` executes it during an arbitrary unit of **time**.
 
 More specifically, you can set four values with SetValues (the order doesn't matter and there are default values for the forgotten one):
 
@@ -124,7 +124,7 @@ The default values are respectively `speed = 1`, `accel = 0`, `curv = 0` and
 `curv' = 0` which means that if you `Integrate(100)` without changing anything,
 you'll go straight forward at constant speed for 100 units of times.
 
-#### `Turn(Number)`
+#### `Turn(Num)`
 
 This operates an *on the spot* rotation of the hand, the angle depending on the
 argument. The square example is the most straightforward use of this
