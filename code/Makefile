@@ -6,6 +6,7 @@ native:
 
 html:
 	pandoc -s -S --toc -c style.css whitePaper.md --from markdown-markdown_in_html_blocks+raw_html -t html5 -o index.html
+	./generate_examples_index.sh | pandoc -s -S --toc -c ../style.css --from markdown-markdown_in_html_blocks+raw_html -t html5 > examples/index.html
 
 clean:
 	rm -Rv *.byte *.js *.native _build/
