@@ -1,6 +1,9 @@
 ---
 title: The Language of Geometry
-author: Mathias Sablé Meyer, Stanislas Dehaene, Marie Amalric
+author:
+ - Mathias Sablé Meyer
+ - Stanislas Dehaene
+ - Marie Amalric
 header-includes:
     <script src="Main.js"></script>
 html_document:
@@ -13,8 +16,8 @@ html_document:
     smart: true
 ---
 
-The Language of Geometry
-========================
+<!--The Language of Geometry-->
+<!--========================-->
 
 
 Introduction
@@ -62,8 +65,8 @@ Syntax
 |         |       | &#124; Body                                                    |
 
 
-Intuitive Semantics
--------------------
+Design Choices --- Informal Semantics
+-------------------------------------
 
 A program either starts with 3 set values for the possible amount of noise or
 it does not, in which case default values are used. Then the body of a program
