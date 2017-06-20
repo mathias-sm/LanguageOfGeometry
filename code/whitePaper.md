@@ -16,9 +16,6 @@ html_document:
     smart: true
 ---
 
-<!--The Language of Geometry-->
-<!--========================-->
-
 
 Introduction
 ------------
@@ -117,15 +114,15 @@ while `Integrate(Number)` executes it during an arbitrary unit of **time**.
 
 More specifically, you can set four values with SetValues (the order doesn't matter and there are default values for the forgotten one):
 
- * **s** is the speed
- * **a** is the acceleration
- * **t** is the curvature (t stands for &#952;)
- * **t**' is the variation of the curvature
+ * **speed** is the speed
+ * **accel** is the acceleration
+ * **curv** is the curvature (t stands for &#952;)
+ * **curv'** is the variation of the curvature
 
 
-The default values are respectively `s = 1`, `a = 0`, `t = 0` and `t' = 0`
-which means that if you `Integrate(100)` without changing anything, you'll go
-straight forward at constant speed for 100 units of times.
+The default values are respectively `speed = 1`, `accel = 0`, `curv = 0` and
+`curv' = 0` which means that if you `Integrate(100)` without changing anything,
+you'll go straight forward at constant speed for 100 units of times.
 
 #### `Turn(Number)`
 
@@ -134,7 +131,18 @@ argument. The square example is the most straightforward use of this
 instruction.
 
 *Remark*: this is syntactic sugar in terms of semantics with `Turn(θ)` being
-the same as `SetValues(s=0,t=θ) ; Integrate(1)`
+the same as `SetValues(speed=0,curv=θ) ; Integrate(1)`
+
+### About the noise
+
+The first line can be used to change the amount of noise. The syntax will be
+changed later on, currently what you are setting is a dB attenuation of the
+noise, therefore 0 leads to infinite noise while inf leads to no noise.
+
+The syntax may be changed but this gives interesting results as it stands:
+a value over 10 leads to an almost pixel-perfect shape, while values between
+0.5 and 5 lead to more noisy shapes, each value changing the type of noise.
+Play around with them to make yourself an intuition.
 
 Formal Semantics
 ----------------
@@ -149,12 +157,14 @@ Input
 
 You may look for inspiration [here](./examples/)
 
-<form><textarea id="program" rows="10">
-POSITION_NOISE=0.7,ACCELERATION_NOISE=5,SECOND_ORDER_NOISE=5;
-DiscreteRepeat(4) {
-    Integrate(200) ;
-    Turn(pi/2)
-}
-</textarea><div class="centerize"><button id="interpret" type="button">Interpret!</button> </div></form>
+<form>
+    <textarea id="program" rows="10">POSITION_NOISE=0.7,ACCELERATION_NOISE=5,SECOND_ORDER_NOISE=5;
+SetValues(speed=1.5,curv'=0.0001) ;
+Integrate(600)
+    </textarea>
+    <div class="centerize">
+        <button id="interpret" type="button">Interpret!</button>
+        </div>
+</form>
 
 
