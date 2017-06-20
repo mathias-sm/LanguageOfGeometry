@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="./style.css">
         <title>Language Of Geometry</title>
     </head>
     <body>
@@ -13,29 +13,20 @@
         </header>
         <main class="test">
             <section>
-                <h2>Warning</h2>
-                This is still unfinished. Many things that you may expect to
-                work are not. In a random order:
-                <ul>
-                    <li><del>There are <emph>no</emph> mathematical operation yet
-                            (i.e. 3*4 = ERROR, not 12)</del>Basic operations
-                        are supported and pi=3.14159265359 (hardcoded)</li>
-                    <li><del>Every float needs a dot: 4 and 4. are not equal, nor
-                            interchangeable</del>The syntax for numbers should
-                        be intuitive, although the backend is free to do what
-                        it wants when converting floats to int (i.e. only in
-                        the DiscreteRepeat instruction). It <emph>should</emph>
-                        do what you expect though.
-                    <li>The semantics for Undefined is not defined for the
-                        moment. At some point this will be used to describe
-                        "infinity" when drawing.</li>
-                    <li>The naming convention will be revised. This is
-                        superficial but still.</li>
-                    <li>This is still generally rough : the screen is limited,
-                    and so are many things.</li>
-                </ul>
-                Generally speaking, if you strictly respect the syntax, you
-                should have no surprise (or you are welcome to report them!)
+                <h2>Introduction</h2>
+                    <p>As we believe in the compositionality and the ability to
+                    manipulate abstract symbols in the brain, we are designing a
+                    language of geometry that allows for this kind of operation.
+                    This is a proof of concept whose goal is to be a proposal
+                    for a way to describe planar shapes in such a way that, with
+                    a compositional semantics and cost function on the programs,
+                    the associated &mdash; unique modulo noise in the
+                    representaion &mdash; shape should match a human notion of
+                    complexity.</p>
+
+                    <p>The primitives were added so that relevant shapes, that
+                    we will describe later on, feel intuitive to draw using the
+                    language. The same goes for the complexity function.</p>
             </section>
             <section>
                 <h2>Syntax</h2>
@@ -75,13 +66,8 @@
                         <td>|</td>
                         <td>Program ; Program</td>
                     </tr>
-                    <tr>
                         <td></td><td></td><td>|</td>
-                        <td>Draw(Number,Number)</td>
-                    </tr>
-                    <tr>
-                        <td></td><td></td><td>|</td>
-                        <td>Set(Number,Number)</td>
+                        <td>SetValues(t'=Number,v'=Number,v''=Number,t''=Number)</td>
                     </tr>
                     <tr>
                         <td></td><td></td><td>|</td>
@@ -101,7 +87,7 @@
                     </tr>
                     <tr>
                         <td></td><td></td><td>|</td>
-                        <td>Integrate(Number) { Program }</td>
+                        <td>Integrate(Number)</td>
                     </tr>
                     <tr>
                         <td></td><td></td><td>|</td>
@@ -110,14 +96,37 @@
                 </table>
             </section>
             <section>
+                <h2>Semantics</h2>
+                    <h3>What is intuitive</h3>
+                        <p>Do not spend too much time on the semantics of
+                        <kbd>numbers</kbd>, <kbd>;</kbd> or <kbd>{}</kbd> (the
+                        empty program), they just do what you expect.</p>
+                    <h3>What is less so</h3>
+                    <h4><kbd>Save(string)</kbd> & <kbd>Load(string)</kbd></h4>
+                    <h4><kbd>DiscreteRepeat(Number) { Program }</kbd></h4>
+                    <h4><kbd>SetValues(...)</kbd></h4>
+                    <h4><kbd>Integrate(Number)</kbd></h4>
+            </section>
+            <section>
+                <h2>Remarks</h2>
+                <ul>
+                    <li>Basic operations are supported and pi=3.14159265359
+                        (hardcoded)</li>
+                    <li><del>The syntax for numbers should be intuitive,
+                            although the semantics for the float to int
+                            conversion is undefined (have no fear, it should do
+                            what you expect though)
+                    <li>The semantics for Undefined is not defined for the
+                        moment. At some point this <emph>sould</emph> be used to
+                        describe "infinity" when drawing.</li>
+                </ul>
+            </section>
+            <section>
                 <h2>Input</h2>
                 You may look for inspiration <a href="./examples/">here</a>
                 <form>
-                    <textarea id="program" rows="10">Set(1, 0.1) ;
-Integrate (1000) {
-    Draw(0.05,0)
-}
-                    </textarea>
+                    <textarea id="program" rows="10">SetValues(t'=0.1,v''=0.05) ;
+Integrate (1000)</textarea>
                     <div class="centerize">
                         <button id="interpret" type="button">Interpret!</button> 
                     </div>
