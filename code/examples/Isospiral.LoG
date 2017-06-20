@@ -1,2 +1,2 @@
-SetValues(t'=0.1,v''=0.05) ;
-Integrate(10000.)
+SetValues(curv=0.1,accel=0.05) ;
+Integrate(10000)

@@ -1,20 +1,20 @@
 Save("Cou");
-Set(2.,0.1);
-Integrate(100.) {} ;
+SetValues(speed=2,curv=0.1);
+Integrate(100.) ;
 Load("Cou");
-Turn(-1.57);
-Integrate(25.) {};
+Turn(-pi/2);
+Integrate(25.) ;
 Save("Bras");
-Integrate(75.) {};
+Integrate(75.) ;
 Save("Hanches");
 Turn(-0.5);
-Integrate(75.) {};
+Integrate(75.) ;
 Load("Hanches");
 Turn(0.5);
-Integrate(75.) {};
+Integrate(75.) ;
 Load("Bras");
-Turn(1.57);
-Integrate(50.) {};
+Turn(pi/2);
+Integrate(50.) ;
 Load("Bras");
-Turn(-1.57);
-Integrate(50.) {}
+Turn(-pi/2);
+Integrate(50.)
