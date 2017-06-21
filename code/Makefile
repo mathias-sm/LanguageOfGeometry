@@ -20,4 +20,5 @@ clean:
 
 pandoc = pandoc -s -S --toc --toc-depth=4 \
 	 --from markdown-markdown_in_html_blocks+raw_html \
+	 --bibliography ./references.bib \
 	 -t html5

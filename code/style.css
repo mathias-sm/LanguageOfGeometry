@@ -32,3 +32,10 @@ canvas {
     display: block;
     width: 650px;
 }
+cite {
+    font-style: normal;
+}
+div#refs {
+    border-top: 1px solid #444;
+    margin-top: 50px;
+}

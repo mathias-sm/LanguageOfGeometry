@@ -58,7 +58,7 @@ let unsupported_messages () =
   Dom.appendChild overlay table;
   Dom.appendChild (doc##body) overlay
 
-let drawProgram truc =
+let drawProgram _ =
     clear_graph () ;
     let w = size_x ()
     and h = size_y () in
@@ -79,16 +79,15 @@ let drawProgram truc =
 let start _ =
   Lwt.ignore_result
     (
-     let doc = Html.document in
+     let whereToDraw = Html.getElementById "programCanvas" in
      let w = 800 in
      let h = 800 in
      let canvas = create_canvas w h in
-     Dom.appendChild doc##body canvas;
+     Dom.appendChild whereToDraw canvas;
      let c = canvas##getContext (Html._2d_) in
      Graphics_js.open_canvas (c##canvas);
      let button = Html.getElementById "interpret" in
      button##onclick <- Dom_html.handler drawProgram ;
-     (*drawProgram ();*)
      Lwt.return ());
   Js._false
 
