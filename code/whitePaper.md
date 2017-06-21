@@ -58,7 +58,7 @@ Shape perception as program inference
 
 ![When we see the upper *complex* shape, don't we break it apart into its
 abstract structure? And what level of granularity do we
-have?](./ProgInference.svg){ width=30% }
+have?](./res/ProgInference.png){ width=30% }
 
 
 Our goal(s)
