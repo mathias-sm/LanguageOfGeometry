@@ -5,7 +5,8 @@ author:
  - Stanislas Dehaene
  - Marie Amalric
 include-before: <script src="Main.js"></script>
-css: style.css
+css:
+ - style.css
 link-citations: true
 ---
 
@@ -27,6 +28,20 @@ Recurrence of simple geometrical shapes in human cognition
 
 ### In a variety of cultures
 
+![Neurospin's research lab specimen --- note both the ear rings and the
+tattoo. Although finding reliable traces of this shape has proven difficult,
+Buddhist mandalas contains deeply intricated geometrical regularities and seem
+to date in this form at least back to the 5th century B.C. according to
+@walcott2006mapping](res/NS.jpg)
+
+Body painting is an example of long lasting traditions, have a look at the
+highly abstract and geometrical
+[maori](http://www.google.com/images?q=maori+tattoo+traditional&tbm=isch) tatoos
+--- and compare it to the
+[munduruku](http://www.google.com/images?q=munduruku+tattoo+traditional&tbm=isch)
+ones.
+
+
 ### In prehistory
 
 > “Nowadays, however, thanks to the attention paid to the abstract 'signs’ by
@@ -43,13 +58,24 @@ Recurrence of simple geometrical shapes in human cognition
     </cite>
 
 While prehistoric figurative drawings are common in caves, especially in
-western Europe --- see for example @Otte2017155
+western Europe --- see for example @Otte2017155, it appears that
+non-figuratives shapes were also present.
 
-Many shapes can be found through the prehistoric age, such as
+One of the most common example through body painting, rock carving or drawing
+are
 [spirals](http://www.google.com/images?q=Kerbstones+Knowth+Newgrange&tbm=isch)
+but Genevieve Von Petzinger published a comprehensive list of *abstract*
+symbols you can find in various caves in France, see @vonPetzinger201437 ---
+table 3 --- for a list of the symbols and where to find them.
 
 
 ### In the history of mathematics
+
+In Euclid's *Elements*, as soon as the first book the notion of point is used,
+as well as the notion of segment and immediately after of its potentially
+infinite extension to a line. Same goes for circle, right angles and parallels.
+While &#966; the golden ratio is already present in the book, the geometrical
+relation to the spiral seems to absent.
 
 ### In children
 
@@ -63,6 +89,48 @@ have?](./res/ProgInference.png){ width=30% }
 
 Our goal(s)
 -----------
+
+1. Create a model of the language of thought for the geometrical shapes.
+
+    * This is done in the sense that the language and its implementation exist.
+    You you actually play with them right [here](#sandbox-for-the-language)
+
+    * **To do** : add weights to the language to get a notion of complexity for
+    a given program, and thus for a given shape
+
+        * The natural numbers should be weighted according to the log of the number
+      according to weber's law --- see @Nieder2003149, @DEHAENE2003145 or
+      @libertus2009behavioral for examples of neural correlates of this number
+      line compression
+
+        * It's a bit more tricky for the real numbers: what about &#960;? In many
+      cases it will have a strong importance and thus should have a low
+      complexity, but for example how should 2*&#960; compare to &#960;/2, one
+      being "a full circle" while the other represents a right angle?
+
+        * On the other hand, choices must be made so that 8 is 
+
+    * **To do:** implement a backward inference algorithm that, given a shape,
+    tries to find a program that matches it.
+
+2. Prove that, in this model, the relevant shapes can all be generated and
+   correspond to minimal program
+
+3. Generate all the minimal programs and critically have a look at the
+   corresponding shapes
+
+4. Bootstrap with large scale experimentation
+
+    * Subjective rating of shapes
+
+    * Ability to remember the shape as a function of the complexity
+
+    * Tracing/copying behaviour experiment
+
+    * fMRI expectation: will the brain activity (Parietal? Prefrontal?) vary as
+    a function of the complexity of a program?
+
+    * MDL to link neuronal pattern to programming pattern?
 
 
 The Language of Geometry (LoG)
@@ -200,4 +268,4 @@ Integrate(600)
 </form>
 <div id="programCanvas"></div>
 
-
+-------------------------------------------------------------------------------
