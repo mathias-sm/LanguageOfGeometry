@@ -4,37 +4,71 @@ author:
  - Mathias Sablé Meyer
  - Stanislas Dehaene
  - Marie Amalric
-header-includes:
-    <script src="Main.js"></script>
-html_document:
-    css: style.css
-    toc: true
-    toc_depth: 6
-    toc_float:
-        collapsed: false
-        smooth_scroll: false
-    smart: true
+include-before: <script src="Main.js"></script>
+css: style.css
+link-citations: true
 ---
 
 
 Introduction
 ------------
 
-As we believe in compositionallity and the ability to manipulate abstract
-symbols in the brain, we are designing a language of geometry that allows for
-this kind of operation. This is a proof of concept whose goal is to be
-a proposal for a way to describe planar shapes in such a way that, with
-a compositional semantics and cost function on the programs, the associated ---
-unique modulo noise in the representation --- shape should match a human notion
-of complexity.
+We believe and will try to demonstrate that the human brain has the ability to
+create very abstract mental representation of *pure* geometrical objects even
+though all we can ever perceive are noisy representation of these.
 
-The primitives were added so that relevant shapes, that we will describe
-later on, feel intuitive to draw using the language. The same goes for
-the complexity function.
+This works through what we will designate as a *Language of Geometry*, LoG,
+that can manipulate abstract rules and symbol to move between different layers
+of representations, from what we noisily draw to what we see when we see
+a not-quite-perfect circle.
+
+Recurrence of simple geometrical shapes in human cognition
+----------------------------------------------------------
+
+### In a variety of cultures
+
+### In prehistory
+
+> “Nowadays, however, thanks to the attention paid to the abstract 'signs’ by
+> Leroi-Gourhan, and to the discovery of similar non-figurative motifs in
+> Australia and elsewhere (see above, p. 38), we have to come to terms with the
+> possibility that these marks may have been of equal, if not greater,
+> importance to Palaeolithic people than the 'recognizable' figures to which we
+> have devoted so much attention. Certainly, it has been estimated that
+> non-figurative marks are two or three times more abundant than figurative,
+> and in some areas far more”
+>
+> -- <cite>
+        *Journey Through the Ice Age* from Paul G. Bahn and Jean Vertut, page 166
+    </cite>
+
+While prehistoric figurative drawings are common in caves, especially in
+western Europe --- see for example @Otte2017155
+
+Many shapes can be found through the prehistoric age, such as
+[spirals](http://www.google.com/images?q=Kerbstones+Knowth+Newgrange&tbm=isch)
 
 
-Syntax
-------
+### In the history of mathematics
+
+### In children
+
+Shape perception as program inference
+-------------------------------------
+
+![When we see the upper *complex* shape, don't we break it apart into its
+abstract structure? And what level of granularity do we
+have?](./ProgInference.svg){ width=30% }
+
+
+Our goal(s)
+-----------
+
+
+The Language of Geometry (LoG)
+------------------------------
+
+### Syntax
 
 
 |         |       |                                                          |
@@ -62,40 +96,39 @@ Syntax
 |         |       | &#124; Body                                              |
 
 
-Design Choices --- Informal Semantics
--------------------------------------
+### Design Choices --- Informal Semantics
 
 A program either starts with 3 set values for the possible amount of noise or
 it does not, in which case default values are used. Then the body of a program
 is either a concatenation of bodys, with the usual syntax `;`, or an
 instruction. Let us detail these a bit more.
 
-### What is intuitive
+#### What is intuitive
 
  * A `Number` is a number : simple operations are resolved, a single value is
    defined so far and this is `pi`.
- 
+
     If you think we need more operations tell me or make a pull request, if it's
     easy to write in OCaml it's easy to add here.
 
  * `{}` is an empty program that does nothing.
 
- * At some point, the semantics of `Undefined` will be defined. In the meantime,
-   it is not defined.
+ * At some point, the semantics of `Undefined` will be defined. In the
+   meantime, it is not defined.
 
        Think of it as adding infinity to the language, but with a *I don't know
        where to stop* rather than an *I will never stop* semantics.
 
-### What is less so
+#### What is less so
 
-#### `Save(string)` & `Load(string)`
+##### `Save(string)` & `Load(string)`
 
 These two instructions are used to respectively store and restore the current
 context, or continuation. You can see it used in both the person example, with
 a very simple use case of keeping positions stored, and in the star example
 where it is dynamically over written.
 
-#### `DiscreteRepeat(Num) { Program }`
+##### `DiscreteRepeat(Num) { Program }`
 
 This takes a Num as an argument, arbitrarily transforms it to an integer (it
 just usually rounds it down, don't worry. See OCaml's Pervasive.int_of_float
@@ -105,7 +138,7 @@ Note that it only concatenates the program so far: if you want to play with
 backtracking, repetitions with/without modifications, and so on, you have to
 play around with `Save` and `Load`.
 
-#### `SetValues(...)` & `Integrate(Num)`
+##### `SetValues(...)` & `Integrate(Num)`
 
 These are the core instructions to understand. Imagine the program as a set of
 instructions for your hand, holding a pencil, drawing something on a piece of
@@ -124,7 +157,7 @@ The default values are respectively `speed = 1`, `accel = 0`, `curv = 0` and
 `curv' = 0` which means that if you `Integrate(100)` without changing anything,
 you'll go straight forward at constant speed for 100 units of times.
 
-#### `Turn(Num)`
+##### `Turn(Num)`
 
 This operates an *on the spot* rotation of the hand, the angle depending on the
 argument. The square example is the most straightforward use of this
@@ -133,7 +166,7 @@ instruction.
 *Remark*: this is syntactic sugar in terms of semantics with `Turn(θ)` being
 the same as `SetValues(speed=0,curv=θ) ; Integrate(1)`
 
-### About the noise
+#### About the noise
 
 The first line can be used to change the amount of noise. The syntax will be
 changed later on, currently what you are setting is a dB attenuation of the
@@ -144,16 +177,15 @@ a value over 10 leads to an almost pixel-perfect shape, while values between
 0.5 and 5 lead to more noisy shapes, each value changing the type of noise.
 Play around with them to make yourself an intuition.
 
-Formal Semantics
-----------------
+### Formal Semantics
 
 As everything is not completely decided yet, the semantics of a program at any
 given moment is given by its operation semantics for the available interpreter
 I wrote. This is going to change one we move on to adding complexity, because
 by this time the semantics will need to be fully specified.
 
-Input
------
+Sandbox for the language
+------------------------
 
 You may look for inspiration [here](./examples/)
 
@@ -166,5 +198,6 @@ Integrate(600)
         <button id="interpret" type="button">Interpret!</button>
         </div>
 </form>
+<div id="programCanvas"></div>
 
 
