@@ -9,10 +9,10 @@ native:
 html: index ex
 
 index:
-	pandoc -s -S --toc --toc-depth=6 -c style.css whitePaper.md --from markdown-markdown_in_html_blocks+raw_html -t html5 -o index.html
+	pandoc -s -S --toc --toc-depth=4 -c style.css whitePaper.md --from markdown-markdown_in_html_blocks+raw_html -t html5 -o index.html
 
 ex:
-	./generate_examples_index.sh | pandoc -s -S --toc --toc-depth=6 -c ../style.css --from markdown-markdown_in_html_blocks+raw_html -t html5 > examples/index.html
+	./generate_examples_index.sh | pandoc -s -S --toc --toc-depth=4 -c ../style.css --from markdown-markdown_in_html_blocks+raw_html -t html5 > examples/index.html
 
 clean:
 	rm -Rvf *.byte *.js *.native index.html _build/ examples/index.html
