@@ -1,6 +1,9 @@
 #!/bin/bash
 
-echo "#Examples"
+echo "---"
+echo "title: A set of examples"
+echo "css: ../style.css"
+echo "---"
 echo
 
 for file in ./examples/*.LoG
