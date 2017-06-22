@@ -16,6 +16,8 @@ body{
     font-size:18px;
     color:#444;
     background-color:#FAFAFA;
+    text-align: justify;
+    text-justify: inter-word;
 }
 
 a {
