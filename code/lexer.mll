@@ -45,13 +45,11 @@ rule read =
   | "DiscreteRepeat"   { DISCRETE_REPEAT }
   | "Save"   { SAVE }
   | "Load"   { LOAD }
-  | "POSITION_NOISE" {NOISE1}
-  | "ACCELERATION_NOISE" {NOISE2}
-  | "SECOND_ORDER_NOISE" {NOISE3}
+  | "NOISE"  {NOISE}
   | "speed"     { VAR "speed" }
-  | "curv"     { VAR "curv" }
+  | "angularSpeed"     { VAR "angularSpeed" }
   | "accel"    { VAR "accel" }
-  | "curv'"    { VAR "curv'" }
+  | "angularAccel"    { VAR "angularAccel" }
   | eof      { EOF }
   | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
 

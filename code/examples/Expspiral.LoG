@@ -1,2 +1,2 @@
-SetValues(speed=1.5,curv'=0.0001) ;
+SetValues(speed=1.5,angularAccel=0.0001) ;
 Integrate(600)

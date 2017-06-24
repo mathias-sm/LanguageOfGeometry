@@ -8,6 +8,7 @@ include-before: <script src="Main.js"></script>
 css:
  - style.css
 link-citations: true
+lang: en
 ---
 
 
@@ -155,9 +156,9 @@ The Language of Geometry (LoG)
 |         |       | &#124; SetValues(speed=Num,accel=Num,curv=Num,curv'=Num) |
 |         |       | &#124; Save(string)                                      |
 |         |       | &#124; Load(string)                                      |
-|         |       | &#124; Turn(Num)                                      |
-|         |       | &#124; DiscreteRepeat(Num) { Body }                   |
-|         |       | &#124; Integrate(Num)                                 |
+|         |       | &#124; Turn(Num)                                         |
+|         |       | &#124; DiscreteRepeat(Num) { Body }                      |
+|         |       | &#124; Integrate(Num)                                    |
 |         |       | &#124; {}                                                |
 |         |       |                                                          |
 | Program | ::=   | &#124; Noises ; Body                                     |
@@ -269,3 +270,6 @@ Integrate(600)
 <div id="programCanvas"></div>
 
 -------------------------------------------------------------------------------
+
+Bibliography
+============
