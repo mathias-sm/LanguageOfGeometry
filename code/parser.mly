@@ -113,3 +113,8 @@ value:
         END_BLOCK {Interpreter.DiscreteRepeat ((int_of_float n),(Some p))}
     | DISCRETE_REPEAT ; BEGIN_BLOCK ; p = value ; END_BLOCK
         {Interpreter.DiscreteRepeat (2,(Some p))}
+    | DISCRETE_REPEAT ; BEGIN_ARGS ; n = expr ; END_ARGS ;
+    BEGIN_BLOCK ; END_BLOCK
+        {Interpreter.DiscreteRepeat ((int_of_float n),(Some Interpreter.Nop))}
+    | DISCRETE_REPEAT ; BEGIN_BLOCK ; END_BLOCK
+        {Interpreter.DiscreteRepeat (2,(Some Interpreter.Nop))}
