@@ -111,5 +111,5 @@ value:
     | p1 = value ; COLON ; p2 = value {Interpreter.Concat (p1,p2)}
     | DISCRETE_REPEAT ; BEGIN_ARGS ; n = expr ; END_ARGS ; BEGIN_BLOCK ; p = value ;
         END_BLOCK {Interpreter.DiscreteRepeat ((int_of_float n),(Some p))}
-    | DISCRETE_REPEAT ; BEGIN_ARGS ; n = expr ; END_ARGS ; BEGIN_BLOCK ;
-        END_BLOCK {Interpreter.DiscreteRepeat ((int_of_float n),None)}
+    | DISCRETE_REPEAT ; BEGIN_BLOCK ; p = value ; END_BLOCK
+        {Interpreter.DiscreteRepeat (2,(Some p))}
