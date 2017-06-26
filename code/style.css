@@ -226,6 +226,14 @@ figcaption {
   text-align: center;
 }
 
+#errorOutput {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 16px;
+  background-color: #ffebee;
+  color: #d50000;
+}
+
 @media only screen and (min-width: 0px) {
   body {
     font-size: 10px;

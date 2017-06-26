@@ -51,7 +51,7 @@ rule read =
   | "accel"    { VAR "accel" }
   | "angularAccel"    { VAR "angularAccel" }
   | eof      { EOF }
-  | _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
+  | _ { raise (SyntaxError ("unexpected char '" ^ Lexing.lexeme lexbuf ^ "'")) }
 
 and read_string buf =
   parse

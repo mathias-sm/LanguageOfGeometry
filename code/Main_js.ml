@@ -6,19 +6,30 @@ open Printf
 open Lexer
 open Lexing
 
-let print_position outx lexbuf =
-  let pos = lexbuf.lex_curr_p in
-  fprintf outx "%s:%d:%d" pos.pos_fname
-    pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
+exception MalformedProgram of string
+
+let console = Lwt_log_js.console
+
+let showError msg = 
+  let errorOutput = Html.getElementById "errorOutput" in
+  errorOutput##innerHTML <- Js.string msg ;
+  Lwt.ignore_result
+      (Lwt_log_core.log ~logger:console ~level:Lwt_log_core.Error msg)
+
+let print_pos lexbuf = 
+    let pos = lexbuf.lex_curr_p in
+    sprintf "(line %d ; column %d)"
+        pos.pos_lnum (pos.pos_cnum - pos.pos_bol)
 
 let parse_with_error lexbuf =
   try Parser.program Lexer.read lexbuf with
   | SyntaxError msg ->
-    fprintf stderr "%a: %s\n" print_position lexbuf msg;
-    None
+      let pos_string = print_pos lexbuf in
+      raise (MalformedProgram
+                (sprintf "Error at position %s, %s" pos_string msg))
   | Parser.Error ->
-    fprintf stderr "%a: syntax error\n" print_position lexbuf;
-    exit (-1)
+      let pos_string = print_pos lexbuf in
+      raise (MalformedProgram (sprintf "Error at position %s\n" pos_string))
 
 let read_program program_string =
   let lexbuf = Lexing.from_string program_string in
@@ -70,9 +81,15 @@ let drawProgram _ =
             (fun () -> failwith "Zut.") in
     let textarea_jstring = textarea_coerced##value in
     let program_string = Js.to_string textarea_jstring in
-    (match read_program program_string with
-        | Some (noise, program) -> interpret program noise
-        | None -> failwith("Program NOT OK")) ;
+    (try 
+        (match read_program program_string with
+            | Some (noise, program) ->
+                    showError "" ;
+                    interpret program noise
+            | None -> ())
+    with
+        | MalformedProgram(error_message) -> showError error_message
+    );
     Js._true
 
 
@@ -80,9 +97,9 @@ let start _ =
   Lwt.ignore_result
     (
      let whereToDraw = Html.getElementById "programCanvas" in
-     let w = 800 in
-     let h = 800 in
-     let canvas = create_canvas w h in
+     let width = whereToDraw##clientWidth in
+     let ww = width in
+     let canvas = create_canvas ww ww in
      Dom.appendChild whereToDraw canvas;
      let c = canvas##getContext (Html._2d_) in
      Graphics_js.open_canvas (c##canvas);
