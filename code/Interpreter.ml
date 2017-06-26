@@ -118,9 +118,11 @@ let interpret program noise =
                 let futur_x =
                     curr_state.x
                  +. curr_state.v *. cos(curr_state.face)
+                 +. random_normal () *. 0.5
                 and futur_y =
                     curr_state.y
-                 +. curr_state.v *. sin(curr_state.face) in
+                 +. curr_state.v *. sin(curr_state.face)
+                 +. random_normal () *. 0.5 in
                 lineto (int_of_float futur_x)
                        (int_of_float futur_y) ;
                 curr_state.x <- futur_x ;
@@ -130,7 +132,7 @@ let interpret program noise =
                     +. random_normal () *. noise ;
                 curr_state.v <-
                     curr_state.v +. curr_state.v'
-                    +. random_normal () *. noise ;
+                    +. random_normal () *. noise /. pi;
                 curr_state.th <-
                     curr_state.th +. curr_state.th'
             done
