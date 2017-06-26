@@ -33,7 +33,7 @@ Recurrence of simple geometrical shapes in human cognition
 tattoo. Although finding reliable traces of this shape has proven difficult,
 Buddhist mandalas contains deeply intricated geometrical regularities and seem
 to date in this form at least back to the 5th century B.C. according to
-@walcott2006mapping](res/NS.jpg)
+@walcott2006mapping](res/NS.jpg){ width=75% }
 
 Body painting is an example of long lasting traditions, have a look at the
 highly abstract and geometrical
@@ -85,7 +85,7 @@ Shape perception as program inference
 
 ![When we see the upper *complex* shape, don't we break it apart into its
 abstract structure? And what level of granularity do we
-have?](./res/ProgInference.png){ width=30% }
+have?](./res/ProgInference.png){ width=50% }
 
 
 Our goal(s)
@@ -140,29 +140,30 @@ The Language of Geometry (LoG)
 ### Syntax
 
 
-|         |       |                                                          |
-| :------ | :---: | :------------------------------------------------------- |
-| Num     | ::=   | &#124; 0, 1, 2, -1, 1.5, pi, ...                         |
-|         |       | &#124; Num + Num                                         |
-|         |       | &#124; Num - Num                                         |
-|         |       | &#124; Num \* Num                                        |
-|         |       | &#124; Num / Num                                         |
-|         |       |                                                          |
-| Noises  | ::=   | &#124; POSITION_NOISE=Num,                               |
-|         |       |   ACCELERATION_NOISE=Num,                                |
-|         |       |   SECOND_ORDER_NOISE=Number                              |
-|         |       |                                                          |
-| Body    | ::=   | &#124; Body ; Body                                       |
-|         |       | &#124; SetValues(speed=Num,accel=Num,curv=Num,curv'=Num) |
-|         |       | &#124; Save(string)                                      |
-|         |       | &#124; Load(string)                                      |
-|         |       | &#124; Turn(Num)                                         |
-|         |       | &#124; DiscreteRepeat(Num) { Body }                      |
-|         |       | &#124; Integrate(Num)                                    |
-|         |       | &#124; {}                                                |
-|         |       |                                                          |
-| Program | ::=   | &#124; Noises ; Body                                     |
-|         |       | &#124; Body                                              |
+|         |       |                                          |
+| :------ | :---: | :----------------------------------      |
+| Num     | ::=   | &#124; 0, 1, 2, -1, 1.5, pi, ...         |
+|         |       | &#124; Num + Num                         |
+|         |       | &#124; Num - Num                         |
+|         |       | &#124; Num \* Num                        |
+|         |       | &#124; Num / Num                         |
+|         |       |                                          |
+| Noises  | ::=   | &#124; NOISE=Num[=0.001],                |
+|         |       |                                          |
+| Body    | ::=   | &#124; Body ; Body                       |
+|         |       | &#124; SetValues(?speed=Num[=1],         |
+|         |       |             ?accel=Num[=0],              |
+|         |       |             ?angularSpeed=Num[=0],       |
+|         |       |             ?angularAccel=Num[=0])       |
+|         |       | &#124; Save(string)                      |
+|         |       | &#124; Load(string)                      |
+|         |       | &#124; Turn(Num)                         |
+|         |       | &#124; DiscreteRepeat(?Num[=2]) { Body } |
+|         |       | &#124; Integrate(Num)                    |
+|         |       | &#124; {}                                |
+|         |       |                                          |
+| Program | ::=   | &#124; Noises ; Body                     |
+|         |       | &#124; Body                              |
 
 
 ### Design Choices --- Informal Semantics
@@ -218,12 +219,12 @@ More specifically, you can set four values with SetValues (the order doesn't mat
 
  * **speed** is the speed
  * **accel** is the acceleration
- * **curv** is the curvature (t stands for &#952;)
- * **curv'** is the variation of the curvature
+ * **angularSpeed** is the curvature (t stands for &#952;)
+ * **angularAccel** is the variation of the angularSpeedature
 
 
-The default values are respectively `speed = 1`, `accel = 0`, `curv = 0` and
-`curv' = 0` which means that if you `Integrate(100)` without changing anything,
+The default values are respectively `speed = 1`, `accel = 0`, `angularSpeed = 0` and
+`angularAccel = 0` which means that if you `Integrate(100)` without changing anything,
 you'll go straight forward at constant speed for 100 units of times.
 
 ##### `Turn(Num)`
@@ -233,7 +234,7 @@ argument. The square example is the most straightforward use of this
 instruction.
 
 *Remark*: this is syntactic sugar in terms of semantics with `Turn(θ)` being
-the same as `SetValues(speed=0,curv=θ) ; Integrate(1)`
+the same as `SetValues(speed=0,angularSpeed=θ) ; Integrate(1)`
 
 #### About the noise
 
@@ -259,14 +260,14 @@ Sandbox for the language
 You may look for inspiration [here](./examples/)
 
 <form>
-    <textarea id="program" rows="10">POSITION_NOISE=0.7,ACCELERATION_NOISE=5,SECOND_ORDER_NOISE=5;
-SetValues(speed=1.5,curv'=0.0001) ;
-Integrate(600)
-    </textarea>
-    <div class="centerize">
-        <button id="interpret" type="button">Interpret!</button>
-        </div>
+<textarea id="program" rows="10">NOISE=0.005;
+SetValues(speed=1.5,angularAccel=0.0001) ;
+Integrate(600)</textarea>
+<div class="centerize">
+<button id="interpret" type="button">Interpret!</button>
+</div>
 </form>
+<div id="errorOutput"></div>
 <div id="programCanvas"></div>
 
 -------------------------------------------------------------------------------
