@@ -22,7 +22,9 @@ index:
 
 ex:
 	./generate_examples_index.sh | \
-	    $(pandoc) > examples/index.html
+	    $(pandoc) \
+	    | sed 's/<code>/<code data-language="LoG">/' \
+	    > examples/index.html
 
 clean:
 	rm -Rvf *.byte *.js *.native index.html _build/ examples/index.html

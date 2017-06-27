@@ -10,7 +10,7 @@ for file in ./examples/*.LoG
 do
     echo "## $(basename $file)"
     echo
-    echo "\`\`\`"
+    echo "\`\`\`LoG"
     cat $file
     echo "\`\`\`"
     echo
