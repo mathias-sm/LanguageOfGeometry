@@ -1,10 +1,9 @@
 html {
-    font-size: 100%;
-    overflow-y: scroll;
-    -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
+    font-size:125%;
     background-color: #636363;
     background-image: url("./res/noise.png");
+    padding-left: 1rem;
+    padding-right: 1rem;
     align-items: center;
     display: flex;
     flex: 1;
@@ -13,13 +12,14 @@ html {
 }
 
 body{
-    width: 90%;
-    max-width: 800px;
-    margin: 75px 5% 75px 5%;
-    padding: 50px 3% 50px 3%;
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
     font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
     line-height:1.6;
-    font-size:18px;
     color:#444;
     background-color:#FAFAFA;
     text-align: justify;
@@ -70,7 +70,7 @@ a::selection {
 h1, h2, h3, h4, h5, h6 {
   color: #111;
   line-height: 125%;
-  margin-top: 2em;
+  margin-top: 2rem;
   font-weight: normal;
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -80,28 +80,28 @@ h4, h5, h6 {
 }
 
 h1 {
-  font-size: 2.5em;
+  font-size: 2.5rem;
   text-align: center;
 }
 
 h2 {
-  font-size: 2em;
+  font-size: 2rem;
 }
 
 h3 {
-  font-size: 1.5em;
+  font-size: 1.5rem;
 }
 
 h4 {
-  font-size: 1.2em;
+  font-size: 1.2rem;
 }
 
 h5 {
-  font-size: 1em;
+  font-size: 1rem;
 }
 
 h6 {
-  font-size: 0.9em;
+  font-size: 0.9rem;
 }
 
 blockquote {
@@ -234,18 +234,6 @@ figcaption {
   color: #d50000;
 }
 
-@media only screen and (min-width: 0px) {
-  body {
-    font-size: 10px;
-  }
-}
-
-@media only screen and (min-width: 768px) {
-  body {
-    font-size: 14px;
-  }
-}
-
 @media print {
   * {
     background: transparent !important;
@@ -319,17 +307,11 @@ table, textarea, kbd {
     width:100%;
 }
 
-table {
-    padding-bottom:2em;
-}
-
 canvas {
     padding: 0;
     padding-top: 2em;
     margin: auto;
     display: block;
-    width: 90%;
-    max-width: 800px;
 }
 
 cite {
