@@ -18,6 +18,8 @@ body{
     margin-bottom: 2rem;
     padding-left: 2rem;
     padding-right: 2rem;
+    padding-bottom: 1rem;
+    padding-top: 1rem;
     font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
     line-height:1.6;
     color:#444;
@@ -107,7 +109,7 @@ h6 {
 blockquote {
   color: #666666;
   margin: 0;
-  padding-left: 3em;
+  padding-left: 1rem;
   border-left: 0.5em #EEE solid;
 }
 
@@ -199,13 +201,10 @@ img {
   vertical-align: middle;
 }
 
-figure {
+figure img {
   display: block;
   text-align: center;
   margin: 1em 0;
-}
-
-figure img {
   border: none;
   margin: 0 auto;
 }
@@ -307,6 +306,134 @@ table, textarea, kbd {
     width:100%;
 }
 
+/*
+ * Thanks to James Edwards, see
+ * https://www.sitepoint.com/best-practice-for-code-examples/
+ */
+/* re-factor the existing styles so that the layout 
+   is on the inner code element rather than the outer pre, 
+   and extend the font reset to all descendents */
+figure
+{
+    display:block;
+    margin:1em 0;
+    border:1px solid #ccc;
+    border-radius:3px;
+    background:#eee;
+}
+pre, pre *
+{
+    font:normal normal normal 1em/1.4 monaco, courier, monospace;
+}
+pre
+{
+    font-size:0.8em;
+}
+pre, pre code, pre samp
+{
+    display:block;
+    margin:0;
+    cursor:text;
+}
+pre code, pre samp
+{
+    /* explicit white-space is needed for IE7 */
+    white-space:pre;
+    padding:10px;
+
+    -moz-tab-size:4;
+    -o-tab-size:4;
+    tab-size:4;
+    overflow-x:auto;
+}
+
+/* extra layout rules for the pre when the numbers column is present */
+pre.line-numbers
+{
+    position:relative;
+}
+pre.line-numbers code, 
+pre.line-numbers samp
+{
+    margin-left:3em;
+    border-left:1px solid #ccc;
+}
+
+/* layout and counter rules for the numbers column */
+pre.line-numbers > div
+{
+    display:block;
+    position:absolute;
+    top:0;
+    left:0;
+    height:100%;
+    border-radius:0 0 0 3px;
+    background:#e5e5e5;
+    overflow:hidden;
+    counter-reset:line;
+}
+
+/* layout and counter rules for each individual number */
+pre.line-numbers > div > span
+{
+    display:block;
+    width:2.5em;
+    padding:0 0.5em 0 0;
+    text-align:right;
+    color:#777;
+    overflow:hidden;
+    counter-increment:line;
+}
+pre.line-numbers > div > span::before
+{
+    content:counter(line);
+}
+pre.line-numbers > div > span:first-child
+{
+    margin-top:10px;
+}
+pre.line-numbers > div > span:nth-child(odd)
+{
+    background:#dfdfdf;
+}
+
+/* negate the numbers column for print since it uses pre-wrap */
+@media print
+{
+    pre code
+    {
+        overflow-x:visible;
+        white-space:pre-wrap;
+    }
+    pre.line-numbers div
+    {
+        display:none;
+    }
+    pre.line-numbers > code, 
+    pre.line-numbers > samp
+    {
+        margin-left:0;
+    }
+}
+
+code b
+{
+    font-weight:normal;
+    color:#039;
+}
+code u, code u b
+{
+    text-decoration:none;
+    color:#083;
+}
+code i, code i *, code i * *
+{
+    letter-spacing:-0.1em;
+    text-decoration:none;
+    font-style:normal;
+    color:#c55;
+}
+
 canvas {
     padding: 0;
     padding-top: 2em;
@@ -316,4 +443,18 @@ canvas {
 
 cite {
     font-style: normal;
+}
+
+button {
+  background: none;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+  color: #0645ad;
+  font-size: 1rem;
+  border: none;
+}
+
+button:hover {
+    background: #3cb0fd22;
+    text-decoration: none;
 }

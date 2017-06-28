@@ -18,18 +18,22 @@ native:
 html: index ex
 
 index:
-	$(pandoc) whitePaper.md -o index.html
+	$(pandoc) whitePaper.md --highlight-style zenburn -o index.html
+	#$(pandoc) whitePaper.md | $(sed) > index.html
 
 ex:
 	./generate_examples_index.sh | \
-	    $(pandoc) \
-	    | sed 's/<code>/<code data-language="LoG">/' \
+	    $(pandoc) -A examples/script.js \
+	    | $(sed) \
 	    > examples/index.html
 
 clean:
 	rm -Rvf *.byte *.js *.native index.html _build/ examples/index.html
 
-pandoc = pandoc -s -S --toc --toc-depth=4 \
-	 --from markdown-markdown_in_html_blocks+raw_html \
+pandoc = pandoc -s --toc --toc-depth=4 \
+	 --from markdown-markdown_in_html_blocks+raw_html+smart \
 	 --bibliography ./references.bib \
+	 --syntax-definition=LoG_highlight.xml --highlight-style=zenburn \
 	 -t html5
+
+sed = sed -e 's/<code /<code contenteditable="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" /g'

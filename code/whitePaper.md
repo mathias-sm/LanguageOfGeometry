@@ -142,28 +142,25 @@ The Language of Geometry (LoG)
 
 |         |       |                                          |
 | :------ | :---: | :----------------------------------      |
-| Num     | ::=   | &#124; 0, 1, 2, -1, 1.5, pi, ...         |
-|         |       | &#124; Num + Num                         |
-|         |       | &#124; Num - Num                         |
-|         |       | &#124; Num \* Num                        |
-|         |       | &#124; Num / Num                         |
+| Num     | ::=   | &#124;`0, 1, 2, -1, 1.5, pi, ...        `|
+|         |       | &#124;`Num + Num                        `|
+|         |       | &#124;`Num - Num                        `|
+|         |       | &#124;`Num \* Num                       `|
+|         |       | &#124;`Num / Num                        `|
 |         |       |                                          |
-| Noises  | ::=   | &#124; NOISE=Num[=0.001],                |
+| Noises  | ::=   | &#124;`NOISE=Num[=0.001]`                |
 |         |       |                                          |
-| Body    | ::=   | &#124; Body ; Body                       |
-|         |       | &#124; SetValues(?speed=Num[=1],         |
-|         |       |             ?accel=Num[=0],              |
-|         |       |             ?angularSpeed=Num[=0],       |
-|         |       |             ?angularAccel=Num[=0])       |
-|         |       | &#124; Save(string)                      |
-|         |       | &#124; Load(string)                      |
-|         |       | &#124; Turn(Num)                         |
-|         |       | &#124; DiscreteRepeat(?Num[=2]) { Body } |
-|         |       | &#124; Integrate(Num)                    |
-|         |       | &#124; {}                                |
+| Body    | ::=   | &#124;`Body ; Body`                      |
+|         |       | &#124;`SetValues(?speed=Num[=1], ?accel=Num[=0], ?angularSpeed=Num[=0], ?angularAccel=Num[=0])`     |
+|         |       | &#124;`Save(string)                     ` |
+|         |       | &#124;`Load(string)                     ` |
+|         |       | &#124;`Turn(Num)                        ` |
+|         |       | &#124;`DiscreteRepeat(?Num[=2]) { Body }` |
+|         |       | &#124;`Integrate(Num)                   ` |
+|         |       | &#124;`{}                               ` |
 |         |       |                                          |
-| Program | ::=   | &#124; Noises ; Body                     |
-|         |       | &#124; Body                              |
+| Program | ::=   | &#124;`Noises ; Body`                    |
+|         |       | &#124;`Body`                             |
 
 
 ### Design Choices --- Informal Semantics
@@ -260,7 +257,8 @@ Sandbox for the language
 You may look for inspiration [here](./examples/)
 
 <form>
-<textarea id="program" rows="10">NOISE=0.005;
+<textarea id="program" rows="10" autocomplete="off" autocorrect="off"
+autocapitalize="off" spellcheck="false">NOISE=0.005;
 SetValues(speed=1.5,angularAccel=0.0001) ;
 Integrate(600)</textarea>
 <div class="centerize">
