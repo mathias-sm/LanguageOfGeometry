@@ -33,11 +33,11 @@ Recurrence of simple geometrical shapes in human cognition
 tattoo. Although finding reliable traces of this shape has proven difficult,
 Buddhist mandalas contains deeply intricated geometrical regularities and seem
 to date in this form at least back to the 5th century B.C. according to
-@walcott2006mapping](res/NS.jpg){ width=75% }
+@walcott2006mapping](res/NS.jpg)
 
 Body painting is an example of long lasting traditions, have a look at the
 highly abstract and geometrical
-[maori](http://www.google.com/images?q=maori+tattoo+traditional&tbm=isch) tatoos
+[maori](http://www.google.com/images?q=maori+tattoo+traditional&tbm=isch) tattoos
 --- and compare it to the
 [munduruku](http://www.google.com/images?q=munduruku+tattoo+traditional&tbm=isch)
 ones.
@@ -75,17 +75,55 @@ table 3 --- for a list of the symbols and where to find them.
 In Euclid's *Elements*, as soon as the first book the notion of point is used,
 as well as the notion of segment and immediately after of its potentially
 infinite extension to a line. Same goes for circle, right angles and parallels.
-While &#966; the golden ratio is already present in the book, the geometrical
-relation to the spiral seems to absent.
 
 ### In children
+
+![Child art, aged 4½. Smiling person (combined head and body). Author: William Robinson](./res/DAP.png)
+
+Drawings in children are more often than not much more abstract than a purely
+visual-copy based mechanism would be able to describe.
+
+For example the classic *Draw-a-person* projective personality test is used on
+children to get a rough idea of their representation of others. They are asked
+to draw, on separate pieces of paper, a man, a woman, and themselves, and then a
+quantitative grading of each drawing leads to various interpretations that we
+will not discuss here. What is fascinating here is the nature of the errors :
+what is drawn has more to do with what abstract representation of a body they
+have than with a visual exercice of reproducing some input.
+
+A first list of shapes we're interested in
+------------------------------------------
+
+![Notice how A is a square, B is a slightly rotated square, but C is a diamond
+and not a square anymore. Earlt appearance in @mach1914analysis, p106 : "Two
+figures may be geometrically congruent, but physiologically quite different,
+[...]". ](./res/SquaresAndDiamonds.png)
+
+From these various sources we decided on a small set of fundamental shapes that
+our language should be able to design. Of course on the way many other are added
+and it is good, once the language is defined, to look back at was it actually
+does, this is described in a more or less exhaustive way further down.
+
+* Squares and diamonds, and importantly the latter should cost more than the
+  former as per @appelle1972perception (or @furmanski2000oblique in humans) and the notion of *oblique effect*.
+* Circles, lines and spirales, with the idea that they are similar on many
+  levels and this should be reflected in the language
+* Overly simplistic persons-like shapes
+* Various radial star-like shapes
+
 
 Shape perception as program inference
 -------------------------------------
 
 ![When we see the upper *complex* shape, don't we break it apart into its
 abstract structure? And what level of granularity do we
-have?](./res/ProgInference.png){ width=50% }
+have?](./res/ProgInference.png)
+
+To what extent can we describe geometrical perception --- as opposed to a more
+general theory of vision, we are here interested about situations where the
+center of attention is non-figurative and by design *abstract* --- as a program
+inference in a given language? Can we map a notion of complexity of programs in
+this language to a relevant notion of complexity for human cognition?
 
 
 Our goal(s)
@@ -172,7 +210,7 @@ instruction. Let us detail these a bit more.
 
 #### What is intuitive
 
- * A `Number` is a number : simple operations are resolved, a single value is
+ * A `Num` is a number : simple operations are resolved, a single value is
    defined so far and this is `pi`.
 
     If you think we need more operations tell me or make a pull request, if it's

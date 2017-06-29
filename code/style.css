@@ -1,5 +1,5 @@
 html {
-    font-size:125%;
+    font-size:100%;
     background-color: #636363;
     background-image: url("./res/noise.png");
     padding-left: 1rem;
@@ -13,7 +13,7 @@ html {
 
 body{
     width: 100%;
-    max-width: 1000px;
+    max-width: 800px;
     margin-top: 2rem;
     margin-bottom: 2rem;
     padding-left: 2rem;
@@ -24,6 +24,9 @@ body{
     line-height:1.6;
     color:#444;
     background-color:#FAFAFA;
+}
+
+p {
     text-align: justify;
     text-justify: inter-word;
 }
@@ -167,7 +170,7 @@ sub {
 
 ul, ol {
   margin: 1em 0;
-  padding: 0 0 0 2em;
+  padding: 0 0 0 1.5rem;
 }
 
 li p:last-child {
@@ -207,12 +210,14 @@ figure img {
   margin: 1em 0;
   border: none;
   margin: 0 auto;
+  max-width: 75%;
 }
 
 figcaption {
-  font-size: 0.8em;
+  font-size: 1rem;
   font-style: italic;
   margin: 0 0 .8em;
+  text-align: center;
 }
 
 
@@ -313,14 +318,6 @@ table, textarea, kbd {
 /* re-factor the existing styles so that the layout 
    is on the inner code element rather than the outer pre, 
    and extend the font reset to all descendents */
-figure
-{
-    display:block;
-    margin:1em 0;
-    border:1px solid #ccc;
-    border-radius:3px;
-    background:#eee;
-}
 pre, pre *
 {
     font:normal normal normal 1em/1.4 monaco, courier, monospace;
