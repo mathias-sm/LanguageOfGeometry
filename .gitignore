@@ -11,3 +11,5 @@ code/_build/*
 *.pdf
 *.synctex*
 *.fdb_latexmk
+*.html
+*.jpg
