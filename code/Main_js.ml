@@ -98,8 +98,7 @@ let start _ =
     (
      let whereToDraw = Html.getElementById "programCanvas" in
      let width = whereToDraw##clientWidth in
-     let ww = width in
-     let canvas = create_canvas ww ww in
+     let canvas = create_canvas width (width/2) in
      Dom.appendChild whereToDraw canvas;
      let c = canvas##getContext (Html._2d_) in
      Graphics_js.open_canvas (c##canvas);

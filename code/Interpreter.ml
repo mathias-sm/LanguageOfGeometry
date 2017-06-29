@@ -94,6 +94,7 @@ let interpret program noise =
                         non-extistent variable %s!" name))
         | Turn f ->
             curr_state.face <- curr_state.face +. f
+                               +. random_normal () *. noise *. 100.;
         | SetValues (v,th,v',th') ->
             curr_state.v <- v ;
             curr_state.th <- th ;
@@ -115,11 +116,11 @@ let interpret program noise =
                 let futur_x =
                     curr_state.x
                  +. curr_state.v *. cos(curr_state.face)
-                 +. random_normal () *. 0.5
+                 +. random_normal () *. 0.1
                 and futur_y =
                     curr_state.y
                  +. curr_state.v *. sin(curr_state.face)
-                 +. random_normal () *. 0.5 in
+                 +. random_normal () *. 0.1 in
                 lineto (int_of_float futur_x)
                        (int_of_float futur_y) ;
                 curr_state.x <- futur_x ;

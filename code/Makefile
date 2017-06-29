@@ -21,12 +21,16 @@ native:
 html: index ex
 
 index:
-	$(pandoc) whitePaper.md --highlight-style zenburn -o index.html
+	$(pandoc) whitePaper.md \
+	    -A numLines.js \
+	    --highlight-style zenburn \
+	    | $(sed) \
+	    > index.html
 	#$(pandoc) whitePaper.md | $(sed) > index.html
 
 ex:
 	./generate_examples_index.sh | \
-	    $(pandoc) -A examples/script.js \
+	    $(pandoc) -A numLines.js \
 	    | $(sed) \
 	    > examples/index.html
 

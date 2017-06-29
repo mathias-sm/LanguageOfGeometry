@@ -2,8 +2,6 @@
 
 echo "---"
 echo "title: A set of examples"
-echo "header-includes:"
-cat examples/figures.js
 echo "css: ../style.css"
 echo "---"
 echo

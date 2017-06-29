@@ -273,14 +273,17 @@ the same as `SetValues(speed=0,angularSpeed=θ) ; Integrate(1)`
 
 #### About the noise
 
-The first line can be used to change the amount of noise. The syntax will be
-changed later on, currently what you are setting is a dB attenuation of the
-noise, therefore 0 leads to infinite noise while inf leads to no noise.
+There is a tiny bit of position noise than is, for the time being, hardcoded.
+It describes some imprecision on the position of the pen on a piece of paper,
+but it orthogonal to the volition about the drawing.
 
-The syntax may be changed but this gives interesting results as it stands:
-a value over 10 leads to an almost pixel-perfect shape, while values between
-0.5 and 5 lead to more noisy shapes, each value changing the type of noise.
-Play around with them to make yourself an intuition.
+What you can control before the program starts by changing `NOISE=Num`,
+however, is the noise about the intention of the drawer : it will make mistakes
+on directions, speed, angles, etc. which can be more or less important and have
+a impact on the final shape. We'd like to think of this noise as the one that
+would appear on a purely feed-forward drawing person that would have no
+feedback what it's doing : because of that, some mistakes may accumulate to a
+point where the shape looks different but this is expected from this model.
 
 ### Formal Semantics
 
@@ -288,6 +291,118 @@ As everything is not completely decided yet, the semantics of a program at any
 given moment is given by its operation semantics for the available interpreter
 I wrote. This is going to change one we move on to adding complexity, because
 by this time the semantics will need to be fully specified.
+
+### A few examples
+
+#### The most simple one
+
+```LoG
+Integrate
+```
+
+Because of the default values this just goes straight forward for 100 time
+units and therefore draws a short, noisy segment.
+
+#### Now with repetitions
+
+```LoG
+DiscreteRepeat {
+    DiscreteRepeat {
+        Integrate ;
+        Turn
+    }
+}
+```
+
+This uses the full potential of default values, but another way to write
+exactly the same program in a more detailed --- but semantically equivalent ---
+way would look like this:
+
+```LoG
+DiscreteRepeat(4) {
+        SetValues(speed=1,accel=0,angularSpeed=0,angularAccel=0) ;
+        Integrate(100) ;
+        Turn(π/2)
+}
+```
+
+#### Let's add some curves
+
+```LoG
+SetValues(angularSpeed=0.02) ;
+Integrate(100*π)
+```
+
+This time the speed, being at default value, is constant, but we set some
+angular rotation and we adjust the default time period so that the whole circle
+is drawn by the program.
+
+#### Let's add even more curves?
+
+```LoG
+SetValues(accel=0.005,angularSpeed=0.05) ;
+Integrate(1000)
+```
+
+Now what happens if one tries to draw a circle, that is with a fixed amount of
+angular speed, but keeps on going faster for each time period?
+
+This is our first example of a spiral, one that satisfies an equidistance
+properties between two turn. We are getting into the subtleties of the
+language, and we can se how expressive it is from just a few instructions.
+
+#### What can we do with backtracking?
+
+```LoG
+SetValues(speed=2,angularSpeed=0.1);
+Integrate(20*pi) ;
+SetValues() ;
+Turn(-pi/2) ;
+Integrate(25) ;
+Save("Arms") ;
+Integrate ;
+Save("Hips") ;
+Turn(-0.5) ;
+Integrate ;
+Load("Hips") ;
+Turn(0.5) ;
+Integrate ;
+Load("Arms") ;
+Turn ;
+Integrate(50) ;
+Load("Arms") ;
+Turn(-pi/2) ;
+Integrate(50)
+```
+
+Now this is a bit of a complex example but it is intuitive in the way it works:
+the saved position are there to allow the pen to magically backtrack to
+relevant positions, such as the base of the arms or the hips. Another point
+could be added for the neck, depending on how one would draw this. This is
+still a fairly naïve use of the backtracking abilities but it helps in
+understanding the Save/Load structure.
+
+#### Let's put all this together
+
+```LoG
+SetValues(angularAccel=0.0005) ;
+Save("centre") ;
+DiscreteRepeat(8) {
+    Integrate ;
+    Save("outerCircle") ;
+    Load("centre") ;
+    Turn(2*pi/8) ;
+    Save("centre")
+} ;
+Load("outerCircle") ;
+SetValues(angularSpeed=0.013) ;
+Turn(-0.15);
+Integrate(475)
+```
+
+This show how complex, regular shapes emerge from somewhat simple programs,
+although it also shows that this requires some fine-tuning and this is to be
+perfected in the long run.
 
 Sandbox for the language
 ------------------------
@@ -297,14 +412,39 @@ You may look for inspiration [here](./examples/)
 <form>
 <textarea id="program" rows="10" autocomplete="off" autocorrect="off"
 autocapitalize="off" spellcheck="false">NOISE=0.005;
-SetValues(speed=1.5,angularAccel=0.0001) ;
-Integrate(600)</textarea>
+SetValues(speed=1,angularAccel=0.00025) ;
+Integrate(400)</textarea>
 <div class="centerize">
 <button id="interpret" type="button">Interpret!</button>
 </div>
 </form>
 <div id="errorOutput"></div>
 <div id="programCanvas"></div>
+
+
+Let's now try to generate shapes
+--------------------------------
+
+TODO. Although the code is more or less ready, some fine tuning is still
+required. Here's the 1000001 program generated with the current algorithm that
+goes on a Breadth-first exploration of the possible programs --- up to a few
+restrictions.
+
+```LoG
+DiscreteRepeat {
+  DiscreteRepeat {
+    Load("a")
+  } ;
+  Load("a") ;
+  Save("a") ;
+  Integrate ;
+  Turn ;
+  Integrate ;
+  Integrate
+}
+```
+
+For what it does it's clearly overkill...
 
 -------------------------------------------------------------------------------
 

@@ -45,6 +45,7 @@ noises:
 value:
     | COMMENT ; _ = STRING { Interpreter.Nop }
     | TURN ; BEGIN_ARGS ; n = expr ; END_ARGS {Interpreter.Turn n}
+    | TURN ; {Interpreter.Turn (Interpreter.pi /. 2.)}
     | SAVE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Save s}
     | LOAD ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Load s}
     | SETVALUES ; BEGIN_ARGS ; END_ARGS {Interpreter.SetValues(1.,0.,0.,0.)}
@@ -108,6 +109,7 @@ value:
          let m4 = (try List.assoc (List.find (String.equal "angularAccel") vars) assoc
                    with Not_found -> 0.) in
          Interpreter.SetValues(m1,m2,m3,m4)}
+    | INTEGRATE {Interpreter.Integrate (100.)}
     | INTEGRATE ; BEGIN_ARGS ; n = expr ; END_ARGS
         {Interpreter.Integrate (n)}
     | p1 = value ; COLON ; p2 = value {Interpreter.Concat (p1,p2)}
