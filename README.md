@@ -9,7 +9,8 @@ What you need to build this
 ---------------------------
 
 Mainly:
-* `pandoc`
 * `ocaml`
 * `opam` then all the dependencies until building works (mainly,
     js_of_ocaml, lwt, ocamlfind, ???)
+* `pandoc` - Note that a recent enough version is required as I'm using the
+  recently added `--syntax-definition=` option.
