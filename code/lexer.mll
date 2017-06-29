@@ -36,6 +36,7 @@ rule read =
   | ','      { COMMA_ARGS }
   | ';'      { COLON }
   | '='      { EQUALS }
+  | '#'      { COMMENT }
   | "pi"     { FLOAT (3.14159265359) }
   | "π"      { FLOAT (3.14159265359) }
   | "Turn"   { TURN }

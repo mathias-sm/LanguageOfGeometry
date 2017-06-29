@@ -50,32 +50,29 @@ let print_float f = match f with
  | f when f = (-1.) *. pi4 -> "-π/4"
  | _ -> Printf.sprintf "%.3g" f
 
-let pp_program program =
+let pp_program channel program =
     let rec pp_helper program tabs = match program with
         | Concat (p1,p2) ->
-            pp_helper p1 tabs ; print_endline " ;" ; pp_helper p2 tabs
+                pp_helper p1 tabs ; Printf.fprintf channel " ;\n" ; pp_helper p2 tabs
         | SetValues (v', th', v'', th'') ->
-            Printf.printf "%sSetValues(v'=%s, theta'=%s, v''=%s, th''=%s)"
+            Printf.fprintf channel "%sSetValues(speed=%s, angularSpeed=%s, accel=%s, angularAccel=%s)"
                 tabs (print_float v') (print_float th') (print_float v'') (print_float th'')
-        | Save name -> Printf.printf "%sSave '%s'" tabs name
-        | Load name -> Printf.printf "%sLoad '%s'" tabs name
-        | Turn f -> Printf.printf "%sTurn(%s)"
+        | Save name -> Printf.fprintf channel "%sSave(\"%s\")" tabs name
+        | Load name -> Printf.fprintf channel "%sLoad(\"%s\")" tabs name
+        | Turn f -> Printf.fprintf channel "%sTurn(%s)"
                         tabs (print_float f)
         | DiscreteRepeat (n,pr) ->
-            Printf.printf "%sDiscreteRepeat %d {\n" tabs n ;
+            Printf.fprintf channel "%sDiscreteRepeat(%d){\n" tabs n ;
             (match pr with
                 | Some pr -> pp_helper pr (Printf.sprintf "%s  " tabs)
                 | None -> ()) ;
-            Printf.printf "\n%s}" tabs
+            Printf.fprintf channel "\n%s}" tabs
         | Integrate (f) ->
-            Printf.printf "%sIntegrate %s" tabs (print_float f) ;
-        | Nop -> ()
+            Printf.fprintf channel "%sIntegrate(%s)" tabs (print_float f) ;
+        | Nop ->
+            Printf.fprintf channel "%sNop" tabs;
     in
-    print_endline "### PROGRAM DEBUG PRINT ###" ;
-    pp_helper program "" ;
-    print_newline () ;
-    print_endline "###  PROGRAM DEBIG END  ###" ;
-    print_newline ()
+    pp_helper program ""
 
 let interpret program noise =
     let rec inter program htbl curr_state =

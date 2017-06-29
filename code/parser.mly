@@ -20,6 +20,7 @@
 %token EOF
 %token SETVALUES
 %token EQUALS
+%token COMMENT
 
 %start <((float)*Interpreter.program) option> program
 %%
@@ -42,6 +43,7 @@ noises:
       COLON {(n)}
 
 value:
+    | COMMENT ; _ = STRING { Interpreter.Nop }
     | TURN ; BEGIN_ARGS ; n = expr ; END_ARGS {Interpreter.Turn n}
     | SAVE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Save s}
     | LOAD ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Load s}

@@ -3,8 +3,9 @@ open Interpreter
 open Printf
 open Lexer
 open Lexing
+open Generator
 
-Random.self_init ()
+let () = Random.self_init ()
 
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
@@ -34,12 +35,19 @@ let file_to_string filename =
     s
 
 let () =
-    open_graph "" ;
-    let string_from_file = file_to_string (Sys.argv.(1)) in
-    match read_program string_from_file with
-    | Some (noise, program) ->
-        pp_program program ;
-        moveto (size_x () / 2) (size_y () / 2) ;
-        interpret program noise ;
-        Unix.sleep 5
-    | None -> failwith("Empty or malformed program")
+    let sup = 100000 in
+    for i = 1 to sup do
+        let oc = open_out (Printf.sprintf "/tmp/enum/%d.LoG" i) in
+        let p = generate_next () in
+        pp_program oc p ;
+        close_out oc
+    done ;
+    (*open_graph "" ;*)
+    (*let string_from_file = file_to_string (Sys.argv.(1)) in*)
+    (*match read_program string_from_file with*)
+    (*| Some (noise, program) ->*)
+        (*pp_program program ;*)
+        (*moveto (size_x () / 2) (size_y () / 2) ;*)
+        (*interpret program noise ;*)
+        (*Unix.sleep 5*)
+    (*| None -> failwith("Empty or malformed program")*)

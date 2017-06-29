@@ -13,7 +13,10 @@ js:
 	    -o Main.js
 
 native:
-	ocamlbuild -use-menhir -tag thread -use-ocamlfind -package js_of_ocaml.graphics -package js_of_ocaml.syntax -syntax camlp4o -plugin-tag "package(js_of_ocaml.ocamlbuild)" Main.native
+	ocamlbuild -use-menhir -tag thread -use-ocamlfind \
+	    -package js_of_ocaml.graphics \
+	    -package js_of_ocaml.syntax \
+	    -syntax camlp4o -plugin-tag "package(js_of_ocaml.ocamlbuild)" Main.native
 
 html: index ex
 
