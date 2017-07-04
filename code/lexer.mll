@@ -36,7 +36,6 @@ rule read =
   | ','      { COMMA_ARGS }
   | ';'      { COLON }
   | '='      { EQUALS }
-  | '#'      { COMMENT }
   | "pi"     { FLOAT (3.14159265359) }
   | "π"      { FLOAT (3.14159265359) }
   | "Turn"   { TURN }
@@ -46,7 +45,12 @@ rule read =
   | "DiscreteRepeat"   { DISCRETE_REPEAT }
   | "Save"   { SAVE }
   | "Load"   { LOAD }
+  | "LoadPos"   { LOAD_POS }
+  | "LoadStroke"   { LOAD_STROKE }
   | "NOISE"  {NOISE}
+  | "on" { PEN_VALUE true }
+  | "off" { PEN_VALUE false }
+  | "pen"  {PEN}
   | "speed"     { VAR "speed" }
   | "angularSpeed"     { VAR "angularSpeed" }
   | "accel"    { VAR "accel" }

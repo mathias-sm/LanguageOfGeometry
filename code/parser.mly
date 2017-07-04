@@ -1,6 +1,7 @@
 %token <float> FLOAT
 %token <string> STRING
 %token <string> VAR
+%token <bool> PEN_VALUE
 %token BEGIN_BLOCK
 %token END_BLOCK
 %token BEGIN_ARGS
@@ -11,6 +12,8 @@
 %token DISCRETE_REPEAT
 %token SAVE
 %token LOAD
+%token LOAD_POS
+%token LOAD_STROKE
 %token TURN
 %token PLUS
 %token MINUS
@@ -20,7 +23,7 @@
 %token EOF
 %token SETVALUES
 %token EQUALS
-%token COMMENT
+%token PEN
 
 %start <((float)*Interpreter.program) option> program
 %%
@@ -43,11 +46,12 @@ noises:
       COLON {(n)}
 
 value:
-    | COMMENT ; _ = STRING { Interpreter.Nop }
     | TURN ; BEGIN_ARGS ; n = expr ; END_ARGS {Interpreter.Turn n}
     | TURN ; {Interpreter.Turn (Interpreter.pi /. 2.)}
     | SAVE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Save s}
     | LOAD ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Load s}
+    | LOAD_POS ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.LoadPos s}
+    | LOAD_STROKE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.LoadStroke s}
     | SETVALUES ; BEGIN_ARGS ; END_ARGS {Interpreter.SetValues(1.,0.,0.,0.)}
     | SETVALUES ; BEGIN_ARGS ; var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
         {let vars = [var4] in
@@ -109,9 +113,17 @@ value:
          let m4 = (try List.assoc (List.find (String.equal "angularAccel") vars) assoc
                    with Not_found -> 0.) in
          Interpreter.SetValues(m1,m2,m3,m4)}
-    | INTEGRATE {Interpreter.Integrate (100.)}
+    | INTEGRATE {Interpreter.Integrate (100.,true)}
     | INTEGRATE ; BEGIN_ARGS ; n = expr ; END_ARGS
-        {Interpreter.Integrate (n)}
+        {Interpreter.Integrate (n,true)}
+    | INTEGRATE ; BEGIN_ARGS ; PEN ; EQUALS ; pen = PEN_VALUE ; END_ARGS
+        {Interpreter.Integrate (100.,pen)}
+    | INTEGRATE ; BEGIN_ARGS ; PEN ; EQUALS ; pen = PEN_VALUE ;
+        COMMA_ARGS ; n = expr ; END_ARGS
+        {Interpreter.Integrate (n,pen)}
+    | INTEGRATE ; BEGIN_ARGS ; n = expr ; COMMA_ARGS ; PEN ; EQUALS ; pen =
+        PEN_VALUE ; END_ARGS
+        {Interpreter.Integrate (n,pen)}
     | p1 = value ; COLON ; p2 = value {Interpreter.Concat (p1,p2)}
     | DISCRETE_REPEAT ; BEGIN_ARGS ; n = expr ; END_ARGS ; BEGIN_BLOCK ; p = value ;
         END_BLOCK {Interpreter.DiscreteRepeat ((int_of_float n),(Some p))}

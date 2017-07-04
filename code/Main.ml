@@ -4,8 +4,11 @@ open Printf
 open Lexer
 open Lexing
 open Generator
+open Images
 
 let () = Random.self_init ()
+
+let memory : (color array array, int) Hashtbl.t = Hashtbl.create 10007
 
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
@@ -35,19 +38,35 @@ let file_to_string filename =
     s
 
 let () =
-    let sup = 100000 in
+    open_graph "" ;
+    set_line_width 3 ;
+    auto_synchronize false ;
+    display_mode false ;
+    remember_mode true ;
+    let sup = 1000000 in
     for i = 1 to sup do
-        let oc = open_out (Printf.sprintf "/tmp/enum/%d.LoG" i) in
         let p = generate_next () in
-        pp_program oc p ;
-        close_out oc
+        clear_graph () ;
+        moveto (size_x () / 2) (size_y () / 2) ;
+        try begin
+            interpret p 0. ;
+            let image = get_image 0 0 (size_x ()) (size_y ()) in
+            let result = dump_image image in
+            if Hashtbl.mem memory result then begin
+                Hashtbl.replace memory result ((Hashtbl.find memory result) + 1)
+            end
+            else begin
+                Hashtbl.add memory result 1 ;
+                Printf.printf "%d is new !" i ;
+                print_newline () ;
+                let oc = open_out (Printf.sprintf "/tmp/enum/%d.LoG" i) in
+                Png.save
+                    (Printf.sprintf "/tmp/enum/%d.png" i) []
+                    (Rgb24 (Graphic_image.image_of image)) ;
+                pp_program oc p ;
+                close_out oc
+            end
+        end
+        with MalformedProgram(s) -> ()
     done ;
-    (*open_graph "" ;*)
-    (*let string_from_file = file_to_string (Sys.argv.(1)) in*)
-    (*match read_program string_from_file with*)
-    (*| Some (noise, program) ->*)
-        (*pp_program program ;*)
-        (*moveto (size_x () / 2) (size_y () / 2) ;*)
-        (*interpret program noise ;*)
-        (*Unix.sleep 5*)
-    (*| None -> failwith("Empty or malformed program")*)
+    close_graph ()

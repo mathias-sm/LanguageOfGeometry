@@ -4,22 +4,30 @@
         <list name="Keywords">
             <item> Turn </item>
             <item> Load </item>
+            <item> LoadPos </item>
+            <item> LoadStroke </item>
             <item> Save </item>
             <item> SetValues </item>
             <item> Integrate </item>
             <item> DiscreteRepeat </item>
+        </list>
+        <list name="Values">
+            <item> on </item>
+            <item> off </item>
         </list>
         <list name="Parameters">
             <item> speed </item>
             <item> accel </item>
             <item> angularSpeed </item>
             <item> angularAccel </item>
+            <item> pen </item>
         </list>
         <contexts>
             <context name="Code" lineEndContext="#stay" attribute="Operator">
                 <DetectChar char="&quot;" context="String" attribute="String" />
                 <RegExpr String="'((\\[ntbr'&quot;\\]|\\[0-9]{3}|\\x[0-9A-Fa-f]{2})|[^'])'" context="#stay" attribute="Character" />
                 <keyword String="Keywords" context="#stay" attribute="Keyword" />
+                <keyword String="Values" context="#stay" attribute="Char" />
                 <keyword String="Parameters" context="#stay" attribute="Parameters" />
                 <RegExpr String="-?[0-9][0-9_]*(\.[0-9][0-9_]*([eE][-+]?[0-9][0-9_]*)?|[eE][-+]?[0-9][0-9_]*)" context="#stay" attribute="Float" />
                 <RegExpr String="-?[0-9][0-9_]*" context="#stay" attribute="Decimal" />
@@ -31,10 +39,11 @@
         </contexts>
     <itemDatas>
         <itemData name="Keyword" defStyleNum="dsKeyword" />
-        <itemData name="Parameters" defStyleNum="dsOthers" />
+        <itemData name="Parameters" defStyleNum="dsVariable" />
         <itemData name="Float" defStyleNum="dsFloat" />
         <itemData name="Decimal" defStyleNum="dsDecVal" />
         <itemData name="String" defStyleNum="dsString" />
+        <itemData name="Char" defStyleNum="dsChar" />
     </itemDatas>
     </highlighting>
     <general>

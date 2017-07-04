@@ -16,6 +16,8 @@ native:
 	ocamlbuild -use-menhir -tag thread -use-ocamlfind \
 	    -package js_of_ocaml.graphics \
 	    -package js_of_ocaml.syntax \
+	    -package camlimages.png \
+	    -package camlimages.graphics \
 	    -syntax camlp4o -plugin-tag "package(js_of_ocaml.ocamlbuild)" Main.native
 
 html: index ex
@@ -23,7 +25,6 @@ html: index ex
 index:
 	$(pandoc) whitePaper.md \
 	    -A numLines.js \
-	    --highlight-style zenburn \
 	    | $(sed) \
 	    > index.html
 	#$(pandoc) whitePaper.md | $(sed) > index.html

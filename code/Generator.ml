@@ -1,18 +1,12 @@
 open Interpreter
 
-(*type program = Concat of program * program*)
-             (*| SetValues of float * float * float * float*)
-             (*| Save of string*)
-             (*| Load of string*)
-             (*| Turn of float*)
-             (*| DiscreteRepeat of int * program option*)
-             (*| Integrate of float*)
-             (*| Nop*)
-
 type cursor =
     | CC of int*int
     | CR of int
-    | CSV | CL | CS | CT | CI (*| CN *)
+    | CSV1 | CSV2 | CSV3 (*| CSV4 *)
+    | CL1 | CLP1 | CLS1 | CS1
+    (*| CL2 | CLP2 | CLS2 | CS2*)
+    | CT | CION | CIOFF (*| CN *)
 
 let rec at : program list -> int -> program option =
     fun l n -> match l with
@@ -22,16 +16,26 @@ let rec at : program list -> int -> program option =
 let generate_helper : unit -> program option =
     let past : program list ref = ref [] in
     let next : program list ref = ref [] in
-    let cursor : cursor ref = ref CI in
+    let cursor : cursor ref = ref CION in
     fun () ->
         let return : program option =
         (match !cursor with
         (*| CN -> cursor := CI ; Some(Nop)*)
-        | CI -> cursor := CT ; Some(Integrate(100.))
-        | CT -> cursor := CS ; Some(Turn(pi /. 2.))
-        | CS -> cursor := CL ; Some(Save("a"))
-        | CL -> cursor := CSV ; Some(Load("a"))
-        | CSV -> cursor := CR(0) ; Some(SetValues(1.,0.,0.,0.))
+        | CION -> cursor := CIOFF ; Some(Integrate(50.,true))
+        | CIOFF -> cursor := CT ; Some(Integrate(50.,false))
+        | CT -> cursor := CS1 ; Some(Turn(pi /. 2.))
+        | CS1 -> cursor := CLP1 ; Some(Save("a"))
+        | CLP1 -> cursor := CLS1 ; Some(LoadPos("a"))
+        | CLS1 -> cursor := CL1 ; Some(LoadStroke("a"))
+        | CL1 -> cursor := CSV1 ; Some(Load("a"))
+        (*| CS2 -> cursor := CLP2 ; Some(Save("b"))*)
+        (*| CLP2 -> cursor := CLS2 ; Some(LoadPos("b"))*)
+        (*| CLS2 -> cursor := CL2 ; Some(LoadStroke("b"))*)
+        (*| CL2 -> cursor := CSV1 ; Some(Load("b"))*)
+        | CSV1 -> cursor := CSV2 ; Some(SetValues(1.,0.,0.,0.))
+        | CSV2 -> cursor := CSV3 ; Some(SetValues(1.,pi/.25.,0.,0.))
+        | CSV3 -> cursor := CR(0) ; Some(SetValues(1.,0.3,0.3,0.))
+        (*| CSV4 -> cursor := CR(0) ; Some(SetValues(1.,0.,0.,0.002))*)
         | CR(n) ->
             (match at !past n with
             | Some p -> cursor := CR(n+1) ; Some(DiscreteRepeat(2,Some(p)))

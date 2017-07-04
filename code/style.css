@@ -455,3 +455,15 @@ button:hover {
     background: #3cb0fd22;
     text-decoration: none;
 }
+
+/* Syntax Highlight 
+ * More or less Dracula theme : https://github.com/dracula/dracula-theme */
+code { color: inherit; background-color: inherit; }
+pre > code { color: #f8f8f2; background-color: #282a36; }
+pre > code > span.kw { color: #8be9fd; } /* Keyword */
+pre > code > span.st { color: #50fa7b; } /* String */
+pre > code > span.va { color: #ffb86c; } /* Variable */
+pre > code > span.dv { color: #ff79c6; } /* DecVal */
+pre > code > span.fl { color: #ff79c6; } /* Float */
+pre > code > span.ch { color: #ff79c6; } /* Char */
+/* if you need other colors in the theme : bd93f9, ff5555, f1fa8c */
