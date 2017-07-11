@@ -88,7 +88,7 @@ let drawProgram _ =
                     interpret program noise
             | None -> ())
     with
-        | MalformedProgram(error_message) -> showError error_message
+        | Interpreter.MalformedProgram(error_message) -> showError error_message
     );
     Js._true
 

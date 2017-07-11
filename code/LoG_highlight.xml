@@ -3,17 +3,19 @@
     <highlighting>
         <list name="Keywords">
             <item> Turn </item>
-            <item> Load </item>
             <item> LoadPos </item>
             <item> LoadStroke </item>
-            <item> Save </item>
-            <item> SetValues </item>
+            <item> SavePos </item>
+            <item> SaveStroke </item>
             <item> Integrate </item>
-            <item> DiscreteRepeat </item>
+            <item> Repeat </item>
         </list>
         <list name="Values">
             <item> on </item>
             <item> off </item>
+            <item> unit_loop </item>
+            <item> unit_distance </item>
+            <item> unit_angle </item>
         </list>
         <list name="Parameters">
             <item> speed </item>
@@ -21,6 +23,8 @@
             <item> angularSpeed </item>
             <item> angularAccel </item>
             <item> pen </item>
+            <item> d </item>
+            <item> angle </item>
         </list>
         <contexts>
             <context name="Code" lineEndContext="#stay" attribute="Operator">

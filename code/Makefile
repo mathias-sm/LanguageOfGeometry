@@ -14,11 +14,9 @@ js:
 
 native:
 	ocamlbuild -use-menhir -tag thread -use-ocamlfind \
-	    -package js_of_ocaml.graphics \
-	    -package js_of_ocaml.syntax \
 	    -package camlimages.png \
 	    -package camlimages.graphics \
-	    -syntax camlp4o -plugin-tag "package(js_of_ocaml.ocamlbuild)" Main.native
+	    Main.native
 
 html: index ex
 
@@ -36,11 +34,12 @@ ex:
 	    > examples/index.html
 
 clean:
-	rm -Rvf *.byte *.js *.native index.html _build/ examples/index.html
+	rm -Rvf *.byte *.native index.html _build/ examples/index.html Main.js
 
 pandoc = pandoc -s --toc --toc-depth=4 \
 	 --from markdown-markdown_in_html_blocks+raw_html+smart \
 	 --bibliography ./references.bib \
+	 --mathjax \
 	 --syntax-definition=LoG_highlight.xml --highlight-style=zenburn \
 	 -t html5
 

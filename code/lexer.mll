@@ -15,7 +15,8 @@ let next_line lexbuf =
 let digit = ['0'-'9']
 let frac = '.' digit*
 let float = digit* frac?
-
+let alpha = ['a'-'z' 'A'-'Z']
+let iden = alpha (alpha | digit | '_')*
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 
@@ -23,40 +24,47 @@ rule read =
   parse
   | white    { read lexbuf }
   | newline  { next_line lexbuf; read lexbuf }
-  | float    { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
   | '"'      { read_string (Buffer.create 17) lexbuf }
   | '{'      { BEGIN_BLOCK }
   | '}'      { END_BLOCK }
   | '('      { BEGIN_ARGS }
   | ')'      { END_ARGS }
-  | '+'      { PLUS }
-  | '-'      { MINUS }
-  | '*'      { TIMES }
-  | '/'      { DIV }
-  | ','      { COMMA_ARGS }
   | ';'      { COLON }
+  | ','      { COMMA_ARGS }
   | '='      { EQUALS }
-  | "pi"     { FLOAT (3.14159265359) }
-  | "π"      { FLOAT (3.14159265359) }
+  | "Double" { DOUBLE }
+  | "Half"   { HALF }
+  | "Next"   { NEXT }
+  | "Divide" { DIVIDE }
+  | "Prev"   { PREV }
+  | "Oppos"   { OPPOS }
+  | "0" { ZERO }
+  | "unit_distance"   { UNIT_DISTANCE }
+  | "unit_angle"   { UNIT_ANGLE }
+  | "unit_loop"   { UNIT_LOOP }
+  | "unit_speed"   { UNIT_SPEED }
+  | "unit_accel"   { UNIT_ACCEL }
+  | "unit_angular_speed"   { UNIT_ANGULAR_SPEED }
+  | "unit_angular_accel"   { UNIT_ANGULAR_ACCEL }
   | "Turn"   { TURN }
-  | "SetValues" {SETVALUES}
-  | "DiscreteRepeat"   { DISCRETE_REPEAT }
+  | "Repeat"   { REPEAT }
   | "Integrate"   { INTEGRATE }
-  | "DiscreteRepeat"   { DISCRETE_REPEAT }
-  | "Save"   { SAVE }
-  | "Load"   { LOAD }
+  | "SavePos"   { SAVE_POS }
+  | "SaveStroke"   { SAVE_STROKE }
   | "LoadPos"   { LOAD_POS }
   | "LoadStroke"   { LOAD_STROKE }
-  | "NOISE"  {NOISE}
-  | "on" { PEN_VALUE true }
-  | "off" { PEN_VALUE false }
-  | "pen"  {PEN}
-  | "speed"     { VAR "speed" }
-  | "angularSpeed"     { VAR "angularSpeed" }
-  | "accel"    { VAR "accel" }
-  | "angularAccel"    { VAR "angularAccel" }
+  | "angle" { ARG_ANGLE }
+  | "d" { ARG_D }
+  | "pen" { ARG_PEN }
+  | "on" { PEN (true) }
+  | "off" { PEN (false) }
+  | "speed" { ARG_SPEED }
+  | "accel" { ARG_ACCEL }
+  | "angularSpeed" { ARG_ANGULARSPEED }
+  | "angularAccel" { ARG_ANGULARACCEL }
   | eof      { EOF }
-  | _ { raise (SyntaxError ("unexpected char '" ^ Lexing.lexeme lexbuf ^ "'")) }
+  | iden as i  { VAR i }
+  (*| _ { raise (SyntaxError ("unexpected char '" ^ Lexing.lexeme lexbuf ^ "'")) }*)
 
 and read_string buf =
   parse

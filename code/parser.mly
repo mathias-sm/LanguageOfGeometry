@@ -1,136 +1,129 @@
-%token <float> FLOAT
 %token <string> STRING
+%token <bool> PEN
 %token <string> VAR
-%token <bool> PEN_VALUE
 %token BEGIN_BLOCK
 %token END_BLOCK
 %token BEGIN_ARGS
-%token COMMA_ARGS
 %token END_ARGS
 %token COLON
+%left COLON
 %token INTEGRATE
-%token DISCRETE_REPEAT
-%token SAVE
-%token LOAD
+%token REPEAT
+%token SAVE_POS
+%token SAVE_STROKE
 %token LOAD_POS
 %token LOAD_STROKE
 %token TURN
-%token PLUS
-%token MINUS
-%token TIMES
-%token NOISE
-%token DIV
-%token EOF
-%token SETVALUES
+%token DOUBLE
+%token HALF
+%token NEXT
+%token PREV
+%token OPPOS
+%token DIVIDE
+%token UNIT_DISTANCE
+%token UNIT_ANGLE
+%token UNIT_LOOP
+%token UNIT_SPEED
+%token UNIT_ACCEL
+%token UNIT_ANGULAR_SPEED
+%token UNIT_ANGULAR_ACCEL
+%token ZERO
+%token COMMA_ARGS
+%token ARG_ANGLE
+%token ARG_D
+%token ARG_PEN
+%token ARG_SPEED
+%token ARG_ACCEL
+%token ARG_ANGULARSPEED
+%token ARG_ANGULARACCEL
 %token EQUALS
-%token PEN
+%token EOF
 
 %start <((float)*Interpreter.program) option> program
 %%
 program:
     | EOF       { None }
-    | n = noises ; v = value ; EOF { Some (n,v) }
+    | v = value ; EOF { Some (0.,v) }
 ;
 
-expr:
-    | f = FLOAT {f}
-    | a = expr PLUS b = expr { a +. b }
-    | a = expr MINUS b = expr { a -. b }
-    | a = expr TIMES b = expr { a *. b }
-    | a = expr DIV b = expr { a /. b }
-    | MINUS b = expr { -. b }
+optional_comma:
+    | COMMA_ARGS {}
+    | {}
 
-noises:
-    | {(0.001)}
-    | NOISE EQUALS n=expr
-      COLON {(n)}
+expr:
+  | UNIT_DISTANCE { Interpreter.UnitDistance }
+  | ZERO { Interpreter.Zero }
+  | UNIT_ANGLE { Interpreter.UnitAngle }
+  | UNIT_LOOP { Interpreter.UnitLoop }
+  | UNIT_SPEED { Interpreter.UnitSpeed }
+  | UNIT_ACCEL { Interpreter.UnitAccel }
+  | UNIT_ANGULAR_SPEED { Interpreter.UnitAngularSpeed }
+  | UNIT_ANGULAR_ACCEL { Interpreter.UnitAngularAccel }
+  | DOUBLE ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Double (e) }
+  | HALF ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Half (e) }
+  | NEXT ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Next (e) }
+  | DIVIDE ; BEGIN_ARGS ; e1 = expr ; COMMA_ARGS ; e2 = expr ; END_ARGS
+    {Interpreter.Divide (e1,e2) }
+  | PREV ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Prev (e) }
+  | OPPOS ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Oppos (e) }
+  | s = VAR { Interpreter.Name s }
+
+optional_turn_args:
+    | BEGIN_ARGS ; ARG_ANGLE ; EQUALS ; e = expr ; END_ARGS {Some e}
+    | BEGIN_ARGS ; END_ARGS {None}
+    | {None}
+turn:
+    | TURN ; args = optional_turn_args ; {Interpreter.Turn args}
+
+
+optional_repeat_args:
+    | BEGIN_ARGS ; e = expr ; END_ARGS { Some e }
+    | {None}
+repeat:
+    | REPEAT ; n = optional_repeat_args ; BEGIN_BLOCK ; p = value ; END_BLOCK
+        {Interpreter.Repeat (n,p)}
+
+
+optional_integrate_args:
+    | BEGIN_ARGS ;
+        d = optional_integrate_d ; optional_comma ;
+        pen = optional_integrate_pen ; optional_comma ;
+        speed = optional_integrate_speed ; optional_comma ;
+        accel = optional_integrate_accel ; optional_comma ;
+        angularSpeed = optional_integrate_angularSpeed ; optional_comma ;
+        angularAccel = optional_integrate_angularAccel ;
+        END_ARGS
+        {Interpreter.Integrate (d,pen,(speed,accel,angularSpeed,angularAccel))}
+    | { Interpreter.Integrate (None,None,(None,None,None,None)) }
+optional_integrate_d:
+    | ARG_D ; EQUALS ; e = expr { Some e }
+    | {None}
+optional_integrate_pen:
+    | ARG_PEN ; EQUALS ; b = PEN { Some b }
+    | {None}
+optional_integrate_speed:
+    | ARG_SPEED ; EQUALS ; e = expr { Some e }
+    | {None}
+optional_integrate_accel:
+    | ARG_ACCEL ; EQUALS ; e = expr { Some e }
+    | {None}
+optional_integrate_angularSpeed:
+    | ARG_ANGULARSPEED ; EQUALS ; e = expr { Some e }
+    | {None}
+optional_integrate_angularAccel:
+    | ARG_ANGULARACCEL ; EQUALS ; e = expr { Some e }
+    | {None}
+integrate:
+    | INTEGRATE ;
+        i = optional_integrate_args { i }
 
 value:
-    | TURN ; BEGIN_ARGS ; n = expr ; END_ARGS {Interpreter.Turn n}
-    | TURN ; {Interpreter.Turn (Interpreter.pi /. 2.)}
-    | SAVE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Save s}
-    | LOAD ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.Load s}
+    | t = turn { t }
+    | SAVE_POS ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.SavePos s}
+    | SAVE_STROKE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.SaveStroke s}
     | LOAD_POS ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.LoadPos s}
     | LOAD_STROKE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.LoadStroke s}
-    | SETVALUES ; BEGIN_ARGS ; END_ARGS {Interpreter.SetValues(1.,0.,0.,0.)}
-    | SETVALUES ; BEGIN_ARGS ; var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
-        {let vars = [var4] in
-         let assoc = [var4,n4] in
-         let m1 = (try List.assoc (List.find (String.equal "speed") vars) assoc
-                   with Not_found -> 1.) in
-         let m2 = (try List.assoc (List.find (String.equal "angularSpeed") vars) assoc
-                   with Not_found -> 0.) in
-         let m3 = (try List.assoc (List.find (String.equal "accel") vars) assoc
-                   with Not_found -> 0.) in
-         let m4 = (try List.assoc (List.find (String.equal "angularAccel") vars) assoc
-                   with Not_found -> 0.) in
-         Interpreter.SetValues(m1,m2,m3,m4)}
-    | SETVALUES ; BEGIN_ARGS ;
-        var3 = VAR ; EQUALS ; n3 = expr ; COMMA_ARGS
-        var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
-        {
-         let vars = [var3;var4] in
-         let assoc = [var3,n3;var4,n4] in
-         let m1 = (try List.assoc (List.find (String.equal "speed") vars) assoc
-                   with Not_found -> 1.) in
-         let m2 = (try List.assoc (List.find (String.equal "angularSpeed") vars) assoc
-                   with Not_found -> 0.) in
-         let m3 = (try List.assoc (List.find (String.equal "accel") vars) assoc
-                   with Not_found -> 0.) in
-         let m4 = (try List.assoc (List.find (String.equal "angularAccel") vars) assoc
-                   with Not_found -> 0.) in
-         Interpreter.SetValues(m1,m2,m3,m4)}
-    | SETVALUES ; BEGIN_ARGS ;
-        var2 = VAR ; EQUALS ; n2 = expr ; COMMA_ARGS
-        var3 = VAR ; EQUALS ; n3 = expr ; COMMA_ARGS
-        var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
-        {
-         let vars = [var2;var3;var4] in
-         let assoc = [var2,n2;var3,n3;var4,n4] in
-         let m1 = (try List.assoc (List.find (String.equal "speed") vars) assoc
-                   with Not_found -> 1.) in
-         let m2 = (try List.assoc (List.find (String.equal "angularSpeed") vars) assoc
-                   with Not_found -> 0.) in
-         let m3 = (try List.assoc (List.find (String.equal "accel") vars) assoc
-                   with Not_found -> 0.) in
-         let m4 = (try List.assoc (List.find (String.equal "angularAccel") vars) assoc
-                   with Not_found -> 0.) in
-         Interpreter.SetValues(m1,m2,m3,m4)}
-    | SETVALUES ; BEGIN_ARGS ;
-        var1 = VAR; EQUALS ; n1 = expr ; COMMA_ARGS
-        var2 = VAR ; EQUALS ; n2 = expr ; COMMA_ARGS
-        var3 = VAR ; EQUALS ; n3 = expr ; COMMA_ARGS
-        var4 = VAR ; EQUALS ; n4 = expr ; END_ARGS
-        {
-         let vars = [var1;var2;var3;var4] in
-         let assoc = [var1,n1;var2,n2;var3,n3;var4,n4] in
-         let m1 = (try List.assoc (List.find (String.equal "speed") vars) assoc
-                   with Not_found -> 1.) in
-         let m2 = (try List.assoc (List.find (String.equal "angularSpeed") vars) assoc
-                   with Not_found -> 0.) in
-         let m3 = (try List.assoc (List.find (String.equal "accel") vars) assoc
-                   with Not_found -> 0.) in
-         let m4 = (try List.assoc (List.find (String.equal "angularAccel") vars) assoc
-                   with Not_found -> 0.) in
-         Interpreter.SetValues(m1,m2,m3,m4)}
-    | INTEGRATE {Interpreter.Integrate (100.,true)}
-    | INTEGRATE ; BEGIN_ARGS ; n = expr ; END_ARGS
-        {Interpreter.Integrate (n,true)}
-    | INTEGRATE ; BEGIN_ARGS ; PEN ; EQUALS ; pen = PEN_VALUE ; END_ARGS
-        {Interpreter.Integrate (100.,pen)}
-    | INTEGRATE ; BEGIN_ARGS ; PEN ; EQUALS ; pen = PEN_VALUE ;
-        COMMA_ARGS ; n = expr ; END_ARGS
-        {Interpreter.Integrate (n,pen)}
-    | INTEGRATE ; BEGIN_ARGS ; n = expr ; COMMA_ARGS ; PEN ; EQUALS ; pen =
-        PEN_VALUE ; END_ARGS
-        {Interpreter.Integrate (n,pen)}
     | p1 = value ; COLON ; p2 = value {Interpreter.Concat (p1,p2)}
-    | DISCRETE_REPEAT ; BEGIN_ARGS ; n = expr ; END_ARGS ; BEGIN_BLOCK ; p = value ;
-        END_BLOCK {Interpreter.DiscreteRepeat ((int_of_float n),(Some p))}
-    | DISCRETE_REPEAT ; BEGIN_BLOCK ; p = value ; END_BLOCK
-        {Interpreter.DiscreteRepeat (2,(Some p))}
-    | DISCRETE_REPEAT ; BEGIN_ARGS ; n = expr ; END_ARGS ;
-    BEGIN_BLOCK ; END_BLOCK
-        {Interpreter.DiscreteRepeat ((int_of_float n),(Some Interpreter.Nop))}
-    | DISCRETE_REPEAT ; BEGIN_BLOCK ; END_BLOCK
-        {Interpreter.DiscreteRepeat (2,(Some Interpreter.Nop))}
+    | s = VAR ; EQUALS ; e = expr {Interpreter.Define (s,e)}
+    | r = repeat { r }
+    | i = integrate { i }

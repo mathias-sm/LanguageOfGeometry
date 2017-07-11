@@ -404,6 +404,40 @@ This show how complex, regular shapes emerge from somewhat simple programs,
 although it also shows that this requires some fine-tuning and this is to be
 perfected in the long run.
 
+#### Using one shape as a guide for another
+
+```LoG
+Save("square");
+SetValues(accel=0.5,angularSpeed=0.6) ;
+Save("spiral");
+DiscreteRepeat(15) {
+  LoadStroke("spiral") ;
+  Integrate(1.1,pen=off) ;
+  Save("spiral") ;
+  LoadStroke("square") ;
+  DiscreteRepeat(4) {
+    Integrate(0.5) ;
+    Turn
+  }
+}
+```
+
+The spiral is here used as a guide where the squares are placed.
+
+#### A few additional examples
+
+##### A square-ish spiral
+
+```LoG
+SetValues(accel=1) ;
+DiscreteRepeat(20) {
+    Integrate(1) ;
+    Turn(pi/2)
+}
+```
+
+
+
 Sandbox for the language
 ------------------------
 
@@ -425,26 +459,35 @@ Integrate(400)</textarea>
 Let's now try to generate shapes
 --------------------------------
 
-TODO. Although the code is more or less ready, some fine tuning is still
-required. Here's the 1000001 program generated with the current algorithm that
-goes on a Breadth-first exploration of the possible programs --- up to a few
-restrictions.
+### Notion of observational equivalence
 
-```LoG
-DiscreteRepeat {
-  DiscreteRepeat {
-    Load("a")
-  } ;
-  Load("a") ;
-  Save("a") ;
-  Integrate ;
-  Turn ;
-  Integrate ;
-  Integrate
-}
-```
+We will say that two program $p_1$ and $p_2$ are observationally equivalent
+under the semantics $⟦\bullet ⟧$ provided, and we write $⟦p_1⟧ \approx ⟦p_2⟧$,
+when the shapes associated with respectively $⟦p_1⟧$ and $⟦p_2⟧$ would be
+considered *identical* by a human observer.
 
-For what it does it's clearly overkill...
+As this is exactly what we are exploring and understanding with this method, a
+weaker notion was defined for the purpose of the exploration : only basic
+rotation and translations lead to observational equivalence.
+
+### Generating shapes
+
+
+
+Discussion
+----------
+
+* Should we add macros/function? Does it sound plausible that people
+  encapsulate a piece of code for later reuse? Arguably yes, but it will make
+  the exploration space significantly bigger. Let's see first what we can do
+  without it.
+* Save and Load(s) are they are currently used allow an access to any point
+  back in time. While this is important for the "person" program, it would also
+  make sense that we can only backtrack to the various most recent branching
+  points, leading to a Push/Pop structure instead of the current one.
+* When moving from abstract planar shapes to volume objects, Integrate will
+  probably take a program as an argument --- for example, a cylinder would be
+  an integrate of a circle
 
 -------------------------------------------------------------------------------
 
