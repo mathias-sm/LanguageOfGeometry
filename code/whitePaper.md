@@ -177,29 +177,29 @@ The Language of Geometry (LoG)
 
 ### Syntax
 
+```LoG
+Var     := | unit_angle | unit_distance | unit_loop 
+           | unit_speed | unit_accel | unit_angular_speed | unit_angular_accel
+           | 0
+           | Double(Var) | Half(Var)
+           | Next(Var) | Prev(Var)
+           | Oppos(Var)
+           | Divide(Var,Var) | Multiply(Var,Var)
+           | Add(Var,Var) | Remove(Var,Var)
 
-|         |       |                                          |
-| :------ | :---: | :----------------------------------      |
-| Num     | ::=   | &#124;`0, 1, 2, -1, 1.5, pi, ...        `|
-|         |       | &#124;`Num + Num                        `|
-|         |       | &#124;`Num - Num                        `|
-|         |       | &#124;`Num \* Num                       `|
-|         |       | &#124;`Num / Num                        `|
-|         |       |                                          |
-| Noises  | ::=   | &#124;`NOISE=Num[=0.001]`                |
-|         |       |                                          |
-| Body    | ::=   | &#124;`Body ; Body`                      |
-|         |       | &#124;`SetValues(?speed=Num[=1], ?accel=Num[=0], ?angularSpeed=Num[=0], ?angularAccel=Num[=0])`     |
-|         |       | &#124;`Save(string)                     ` |
-|         |       | &#124;`Load(string)                     ` |
-|         |       | &#124;`Turn(Num)                        ` |
-|         |       | &#124;`DiscreteRepeat(?Num[=2]) { Body }` |
-|         |       | &#124;`Integrate(Num)                   ` |
-|         |       | &#124;`{}                               ` |
-|         |       |                                          |
-| Program | ::=   | &#124;`Noises ; Body`                    |
-|         |       | &#124;`Body`                             |
-
+Program := | Body ; Body
+           | SavePos("string")
+           | SaveStroke("string")
+           | LoadPos("string")
+           | LoadStroke("string")
+           | Turn(angle=Var)
+           | Repeat([2]) { Body }
+           | Integrate([d=Var], [pen={on,off}],
+                     [speed=Var],
+                     [accel=Var],
+                     [angularSpeed=Var],
+                     [angularAccel=Var])
+```
 
 ### Design Choices --- Informal Semantics
 
@@ -233,7 +233,7 @@ context, or continuation. You can see it used in both the person example, with
 a very simple use case of keeping positions stored, and in the star example
 where it is dynamically over written.
 
-##### `DiscreteRepeat(Num) { Program }`
+##### `Repeat(Num) { Program }`
 
 This takes a Num as an argument, arbitrarily transforms it to an integer (it
 just usually rounds it down, don't worry. See OCaml's Pervasive.int_of_float
@@ -306,8 +306,8 @@ units and therefore draws a short, noisy segment.
 #### Now with repetitions
 
 ```LoG
-DiscreteRepeat {
-    DiscreteRepeat {
+Repeat {
+    Repeat {
         Integrate ;
         Turn
     }
@@ -319,9 +319,12 @@ exactly the same program in a more detailed --- but semantically equivalent ---
 way would look like this:
 
 ```LoG
-DiscreteRepeat(4) {
-        SetValues(speed=1,accel=0,angularSpeed=0,angularAccel=0) ;
-        Integrate(100) ;
+Repeat(4) {
+        Integrate(d=unit_distance,pen=on,
+                  speed=unit_speed,
+                  accel=0,
+                  angularSpeed=0,
+                  angularAccel=0) ;
         Turn(π/2)
 }
 ```
@@ -329,50 +332,74 @@ DiscreteRepeat(4) {
 #### Let's add some curves
 
 ```LoG
-SetValues(angularSpeed=0.02) ;
-Integrate(100*π)
+Integrate(angularSpeed=unit_angular_speed)
 ```
 
 This time the speed, being at default value, is constant, but we set some
 angular rotation and we adjust the default time period so that the whole circle
 is drawn by the program.
 
-#### Let's add even more curves?
+If we want half the circle, same speed, then the length being the same we will
+get doubled diameter :
 
 ```LoG
-SetValues(accel=0.005,angularSpeed=0.05) ;
-Integrate(1000)
+Integrate(angularSpeed=Half(unit_angular_speed))
 ```
+
+#### Let's add even more curves?
 
 Now what happens if one tries to draw a circle, that is with a fixed amount of
 angular speed, but keeps on going faster for each time period?
 
-This is our first example of a spiral, one that satisfies an equidistance
-properties between two turn. We are getting into the subtleties of the
-language, and we can se how expressive it is from just a few instructions.
+```LoG
+Integrate(accel=unit_accel,angularSpeed=unit_angular_speed) ;
+```
+
+This leads to the first "spin" of a spiral. Now if we want to fill the screen
+with a spiral there are at least two ways of doing this : either repeating this
+instruction several times --- using `Repeat` or manually --- or setting a
+higher value for the integrate length `d` :
+
+* Version with higher `d` value :
+
+```LoG
+Integrate(d=Double(Double(unit_distance)),
+          accel=unit_accel,
+          angularSpeed=unit_angular_speed)
+```
+
+* Version with repetitions :
+
+```LoG
+Repeat {
+  Repeat {
+    Integrate(accel=unit_accel,angularSpeed=unit_angular_speed)
+  }
+}
+```
 
 #### What can we do with backtracking?
 
 ```LoG
-SetValues(speed=2,angularSpeed=0.1);
-Integrate(20*pi) ;
-SetValues() ;
-Turn(-pi/2) ;
-Integrate(25) ;
-Save("Arms") ;
+middle = Half(unit_distance) ;
+short = Half(middle) ;
+Integrate(angularSpeed=unit_angular_speed) ;
+Turn(angle=Oppos(unit_angle)) ;
+Integrate(d=short) ;
+SavePos("Arms") ;
+Integrate(d=middle) ;
+SavePos("Hips") ;
+Turn(angle=Half(unit_angle)) ;
 Integrate ;
-Save("Hips") ;
-Turn(-0.5) ;
+LoadPos("Hips") ;
+Turn(angle=Oppos(unit_angle)) ;
 Integrate ;
-Load("Hips") ;
-Turn(0.5) ;
-Integrate ;
-Load("Arms") ;
-Turn ;
-Integrate(50) ;
-Load("Arms") ;
-Turn(-pi/2) ;
-Integrate(50)
+LoadPos("Arms") ;
+Turn(angle=Oppos(Half(unit_angle))) ;
+Integrate(d=short) ;
+LoadPos("Arms") ;
+Turn(angle=Double(Oppos(unit_angle))) ;
+Integrate(d=short)
 ```
 
 Now this is a bit of a complex example but it is intuitive in the way it works:
@@ -453,6 +480,7 @@ Integrate(400)</textarea>
 </div>
 </form>
 <div id="errorOutput"></div>
+<div id="normalOutput"></div>
 <div id="programCanvas"></div>
 
 

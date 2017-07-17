@@ -118,6 +118,9 @@ let () =
     match read_program string_from_file with
     | Some (n,program) ->
         pp_program Pervasives.stdout program ;
+        print_newline ();
+        print_int (costProgram program) ;
+        print_newline ();
         moveto (middle_x ()) (middle_y ()) ;
         interpret program 0. ;
         Unix.sleep 5

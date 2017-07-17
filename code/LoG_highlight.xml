@@ -9,6 +9,7 @@
             <item> SaveStroke </item>
             <item> Integrate </item>
             <item> Repeat </item>
+            <item> ; </item>
         </list>
         <list name="Values">
             <item> on </item>
@@ -16,6 +17,17 @@
             <item> unit_loop </item>
             <item> unit_distance </item>
             <item> unit_angle </item>
+            <item> unit_speed </item>
+            <item> unit_accel </item>
+            <item> unit_angular_speed </item>
+            <item> unit_angular_accel </item>
+            <item> 0 </item>
+            <item> Oppos </item>
+            <item> Double </item>
+            <item> Half </item>
+            <item> Next </item>
+            <item> Prev </item>
+            <item> Divide </item>
         </list>
         <list name="Parameters">
             <item> speed </item>
@@ -34,6 +46,7 @@
                 <keyword String="Values" context="#stay" attribute="Char" />
                 <keyword String="Parameters" context="#stay" attribute="Parameters" />
                 <RegExpr String="-?[0-9][0-9_]*(\.[0-9][0-9_]*([eE][-+]?[0-9][0-9_]*)?|[eE][-+]?[0-9][0-9_]*)" context="#stay" attribute="Float" />
+                <RegExpr String="π" context="#stay" attribute="Float" />
                 <RegExpr String="-?[0-9][0-9_]*" context="#stay" attribute="Decimal" />
             </context>
             <context name="String" lineEndContext="#stay" attribute="String">

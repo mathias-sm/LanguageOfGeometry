@@ -26,7 +26,7 @@ let my_print_bool b = match b with
 (* The relevant units *)
 
 let unitLoop = 2
-let unitDistance = pi2
+let unitTime = pi2
 let unitTurn = pis2
 let baseSpeed = 1.
 let baseAccel = 1.

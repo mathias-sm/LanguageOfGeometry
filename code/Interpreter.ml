@@ -5,7 +5,7 @@ open Plotter
 open Utils
 
 type var =    Name of string
-            | UnitAngle | UnitDistance | UnitLoop
+            | UnitAngle | UnitTime | UnitLoop
             | UnitSpeed | UnitAccel | UnitAngularSpeed | UnitAngularAccel
             | Zero
             | Double of var | Half of var
@@ -29,7 +29,6 @@ type program = Concat of program * program
              | Repeat of var option * program
              | Integrate of var option * bool option * innerValues
              | Define of string * var
-             | Nop
 
 type internal = { mutable x             : float
                 ; mutable y             : float
@@ -47,7 +46,7 @@ let rec my_print_var v = match v with
     | Name s -> s
     | Zero -> "0"
     | UnitAngle -> "unit_angle"
-    | UnitDistance -> "unit_distance"
+    | UnitTime -> "unit_time"
     | UnitLoop -> "unit_loop"
     | UnitSpeed -> "unit_speed"
     | UnitAccel -> "unit_accel"
@@ -105,7 +104,7 @@ let pp_program channel program =
             (if f = None && pen = None && speed = None && accel = None &&
                 angularSpeed = None && angularAccel = None then ""
             else (let s = ref "(" in begin
-                (match f with None->()|Some(f)->s:=!s^"d="^my_print_var f^",");
+                (match f with None->()|Some(f)->s:=!s^"t="^my_print_var f^",");
                 (match pen with None->()|Some(p)->s:=!s^"pen="^(my_print_bool p)^",");
                 (match speed with None->()|Some(f)->s:=!s^"speed="^my_print_var f^",");
                 (match accel with None->()|Some(f)->s:=!s^"accel="^my_print_var f^",");
@@ -114,14 +113,82 @@ let pp_program channel program =
             end ; ((String.sub !s 0 ((String.length !s) - 1))^")")))
         | Define (name,v) ->
             Printf.fprintf channel "%s%s = %s" tabs name (my_print_var v)
-        | Nop ->
-            Printf.fprintf channel "%sNop" tabs;
     in
     pp_helper program "" ; print_newline ()
 
+let valuesCostVar : var -> int =
+    let unit_cost = 1 in
+    fun v -> match v with
+    | UnitTime -> unit_cost | UnitLoop -> unit_cost | UnitAccel -> unit_cost
+    | UnitAngle -> unit_cost | UnitSpeed -> unit_cost
+    | UnitAngularAccel -> unit_cost | UnitAngularSpeed -> 1
+    | Zero -> 1
+    | Name _ -> 1
+    | Double v' ->  1
+    | Half v' ->  1
+    | Next v' ->  1
+    | Prev v' ->  1
+    | Oppos v' ->  1
+    | Divide(v1,v2) -> 1
+
+let costVar : var option -> int =
+    let rec helper v = match v with
+        | UnitTime -> valuesCostVar UnitTime
+        | UnitLoop -> valuesCostVar UnitLoop
+        | UnitAccel -> valuesCostVar UnitAccel
+        | UnitAngle -> valuesCostVar UnitAngle
+        | UnitSpeed -> valuesCostVar UnitSpeed
+        | UnitAngularSpeed -> valuesCostVar UnitAngularSpeed
+        | UnitAngularAccel -> valuesCostVar UnitAngularAccel
+        | Zero -> valuesCostVar Zero
+        | Name s -> valuesCostVar (Name s)
+        | Double v' ->  (valueCostVar (Double v')) + helper v'
+        | Half v' ->  (valueCostVar (Half v')) + helper v'
+        | Prev v' ->  (valueCostVar (Prev v')) + helper v'
+        | Next v' ->  (valueCostVar (Next v')) + helper v'
+        | Oppos v' ->  (valueCostVar (Oppos v')) + helper v'
+        | Divide(v1,v2) -> (valuesCostVar (Divide(v1,v2))) + helper v1 + helper v2
+    in fun vo -> match vo with
+    | None -> 0
+    | Some v -> helper v
+
+let valuesCostProgram : program -> int =
+    fun p -> match p with
+    | Turn _ -> 1
+    | SavePos _ -> 1
+    | SaveStroke _ -> 1
+    | LoadPos _ -> 1
+    | LoadStroke _ -> 1
+    | Concat (_,_) -> 2
+    | Repeat (_,_) -> 1
+    | Define (_,_) -> 1
+    | Integrate(_,_,_) -> 1
+
+let rec costProgram : program -> int =
+    fun p -> match p with
+    | Turn v -> (valuesCostProgram (Turn v)) + (costVar v)
+    | SavePos s -> (valuesCostProgram (SavePos s))
+    | SaveStroke s -> (valuesCostProgram (SaveStroke s))
+    | LoadPos s -> (valuesCostProgram (LoadPos s))
+    | LoadStroke s -> (valuesCostProgram (LoadStroke s))
+    | Concat (p1,p2) -> (valuesCostProgram (Concat (p1,p2)))
+                        + costProgram p1 + costProgram p2
+    | Repeat (v,p') -> (valuesCostProgram (Repeat(v,p')))
+                       + (costVar v) + (costProgram p')
+    | Define (s,v) -> (valuesCostProgram (Define (s,v)))
+                      + costVar v
+    | Integrate(v1,v2,(v3,v4,v5,v6)) ->
+            (ValuesCostProgram (Integrate(v1,v2,(v3,v4,v5,v6)))
+          + costVar v1
+          + (match v2 with None -> 0 | Some _ -> 1)
+          + costVar v3
+          + costVar v4
+          + costVar v5
+          + costVar v6
+
 let evaluateVar v htbl_var =
 let rec evaluateVarHelper v htbl_var = match v with
-    | UnitDistance -> (unitDistance,fun () -> unitDistance)
+    | UnitTime -> (unitTime,fun () -> unitTime)
     | UnitAngle -> (unitTurn,fun () -> unitTurn)
     | UnitLoop -> (float_of_int unitLoop, fun () -> (float_of_int unitLoop))
     | Zero -> (0., fun () -> 0.)
@@ -185,11 +252,6 @@ let interpret program noise =
                 let angle : float = match f with None -> unitTurn | Some(f') ->
                     evaluateVar f' htbl_var in
                 if !has_started then curr_state.face <- curr_state.face +. angle
-        (*| SetValues (v,th,v',th') ->*)
-            (*curr_state.v <- v /. 400. ;*)
-            (*curr_state.th <- (th /. 10000.) ;*)
-            (*curr_state.v' <- (v' /. 10000000.) ;*)
-            (*curr_state.th' <- th'*)
         | Concat (p1,p2) ->
             inter p1 htbl_pos htbl_stroke htbl_var curr_state ;
             inter p2 htbl_pos htbl_stroke htbl_var curr_state
@@ -201,7 +263,7 @@ let interpret program noise =
                 inter pr htbl_pos htbl_stroke htbl_var curr_state
             done
         | Integrate (f, pen, (speed,accel,angularSpeed,angularAccel)) ->
-            let f = match f with None -> unitDistance
+            let f = match f with None -> unitTime
                     | Some v -> evaluateVar v htbl_var in
             let speed =
                 (match speed with None -> curr_state.speed
@@ -236,14 +298,13 @@ let interpret program noise =
                     curr_state.face <-
                         curr_state.face +. (curr_state.angularSpeed /. (100.*.pi)) ;
                     curr_state.speed <-
-                        curr_state.speed +. (curr_state.accel /. 25000.) ;
+                        curr_state.speed +. (curr_state.accel /. 2500.) ;
                     curr_state.angularSpeed <-
                         curr_state.angularSpeed +. (curr_state.angularAccel /.
                         10000000.)
                 done
             end
         | Define (name,v) -> Hashtbl.add htbl_var name v
-        | Nop -> ()
     in let initial_state =
         { x = middle_x ()
         ; y = middle_y ()

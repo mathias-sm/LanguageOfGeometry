@@ -10,7 +10,8 @@ What you need to build this
 
 Mainly:
 * `ocaml`
-* `opam` then all the dependencies until building works (mainly,
-    js_of_ocaml, lwt, ocamlfind, ???)
+* `opam`, and then you can install `opam install ocamlbuild ocamlfind lwt
+  js_of_ocaml js_of_ocaml-ocamlbuild js_of_ocaml-camlp4 js_of_ocaml-lwt menhir
+  camlimages` and you're good to go
 * `pandoc` - Note that a recent enough version is required as I'm using the
   recently added `--syntax-definition=` option.

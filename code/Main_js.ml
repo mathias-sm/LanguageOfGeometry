@@ -85,6 +85,10 @@ let drawProgram _ =
         (match read_program program_string with
             | Some (noise, program) ->
                     showError "" ;
+                    let normalOutput = Html.getElementById "normalOutput" in
+                    normalOutput##innerHTML <-
+                        Js.string (Printf.sprintf "Program's cost : %d"
+                                    (costProgram program))
                     interpret program noise
             | None -> ())
     with

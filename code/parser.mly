@@ -20,7 +20,7 @@
 %token PREV
 %token OPPOS
 %token DIVIDE
-%token UNIT_DISTANCE
+%token UNIT_TIME
 %token UNIT_ANGLE
 %token UNIT_LOOP
 %token UNIT_SPEED
@@ -30,7 +30,7 @@
 %token ZERO
 %token COMMA_ARGS
 %token ARG_ANGLE
-%token ARG_D
+%token ARG_T
 %token ARG_PEN
 %token ARG_SPEED
 %token ARG_ACCEL
@@ -51,7 +51,7 @@ optional_comma:
     | {}
 
 expr:
-  | UNIT_DISTANCE { Interpreter.UnitDistance }
+  | UNIT_TIME { Interpreter.UnitTime }
   | ZERO { Interpreter.Zero }
   | UNIT_ANGLE { Interpreter.UnitAngle }
   | UNIT_LOOP { Interpreter.UnitLoop }
@@ -96,7 +96,7 @@ optional_integrate_args:
         {Interpreter.Integrate (d,pen,(speed,accel,angularSpeed,angularAccel))}
     | { Interpreter.Integrate (None,None,(None,None,None,None)) }
 optional_integrate_d:
-    | ARG_D ; EQUALS ; e = expr { Some e }
+    | ARG_T ; EQUALS ; e = expr { Some e }
     | {None}
 optional_integrate_pen:
     | ARG_PEN ; EQUALS ; b = PEN { Some b }

@@ -39,7 +39,7 @@ rule read =
   | "Prev"   { PREV }
   | "Oppos"   { OPPOS }
   | "0" { ZERO }
-  | "unit_distance"   { UNIT_DISTANCE }
+  | "unit_time"   { UNIT_TIME }
   | "unit_angle"   { UNIT_ANGLE }
   | "unit_loop"   { UNIT_LOOP }
   | "unit_speed"   { UNIT_SPEED }
@@ -54,7 +54,7 @@ rule read =
   | "LoadPos"   { LOAD_POS }
   | "LoadStroke"   { LOAD_STROKE }
   | "angle" { ARG_ANGLE }
-  | "d" { ARG_D }
+  | "t" { ARG_T }
   | "pen" { ARG_PEN }
   | "on" { PEN (true) }
   | "off" { PEN (false) }

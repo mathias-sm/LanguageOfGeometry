@@ -230,6 +230,14 @@ figcaption {
   text-align: center;
 }
 
+#normalOutput {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 16px;
+  background-color: #ffebee;
+  color: #00d500;
+}
+
 #errorOutput {
   text-align: center;
   margin-top: 20px;
