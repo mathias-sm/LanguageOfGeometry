@@ -13,8 +13,6 @@ type var =    Name of string
             | Oppos of var
             | Divide of var * var
 
-type change = Double | Half | Next | Prev
-
 type innerValues = var option
                  * var option
                  * var option
@@ -82,8 +80,8 @@ let pp_program channel program =
     let rec pp_helper program tabs = match program with
         | Concat (p1,p2) ->
                 pp_helper p1 tabs ; Printf.fprintf channel " ;\n" ; pp_helper p2 tabs
-        | SavePos name -> Printf.fprintf channel "%sSave(\"%s\")" tabs name
-        | SaveStroke name -> Printf.fprintf channel "%sSave(\"%s\")" tabs name
+        | SavePos name -> Printf.fprintf channel "%sSavePos(\"%s\")" tabs name
+        | SaveStroke name -> Printf.fprintf channel "%sSaveStroke(\"%s\")" tabs name
         | LoadPos name -> Printf.fprintf channel "%sLoadPos(\"%s\")" tabs name
         | LoadStroke name -> Printf.fprintf channel "%sLoadStroke(\"%s\")" tabs name
         | Turn f -> Printf.fprintf channel "%sTurn%s" tabs
@@ -121,8 +119,8 @@ let valuesCostVar : var -> int =
     fun v -> match v with
     | UnitTime -> unit_cost | UnitLoop -> unit_cost | UnitAccel -> unit_cost
     | UnitAngle -> unit_cost | UnitSpeed -> unit_cost
-    | UnitAngularAccel -> unit_cost | UnitAngularSpeed -> 1
-    | Zero -> 1
+    | UnitAngularAccel -> unit_cost | UnitAngularSpeed -> unit_cost
+    | Zero -> unit_cost
     | Name _ -> 1
     | Double v' ->  1
     | Half v' ->  1
@@ -142,11 +140,11 @@ let costVar : var option -> int =
         | UnitAngularAccel -> valuesCostVar UnitAngularAccel
         | Zero -> valuesCostVar Zero
         | Name s -> valuesCostVar (Name s)
-        | Double v' ->  (valueCostVar (Double v')) + helper v'
-        | Half v' ->  (valueCostVar (Half v')) + helper v'
-        | Prev v' ->  (valueCostVar (Prev v')) + helper v'
-        | Next v' ->  (valueCostVar (Next v')) + helper v'
-        | Oppos v' ->  (valueCostVar (Oppos v')) + helper v'
+        | Double v' ->  (valuesCostVar (Double v')) + helper v'
+        | Half v' ->  (valuesCostVar (Half v')) + helper v'
+        | Prev v' ->  (valuesCostVar (Prev v')) + helper v'
+        | Next v' ->  (valuesCostVar (Next v')) + helper v'
+        | Oppos v' ->  (valuesCostVar (Oppos v')) + helper v'
         | Divide(v1,v2) -> (valuesCostVar (Divide(v1,v2))) + helper v1 + helper v2
     in fun vo -> match vo with
     | None -> 0
@@ -159,7 +157,7 @@ let valuesCostProgram : program -> int =
     | SaveStroke _ -> 1
     | LoadPos _ -> 1
     | LoadStroke _ -> 1
-    | Concat (_,_) -> 2
+    | Concat (_,_) -> 1
     | Repeat (_,_) -> 1
     | Define (_,_) -> 1
     | Integrate(_,_,_) -> 1
@@ -176,9 +174,9 @@ let rec costProgram : program -> int =
     | Repeat (v,p') -> (valuesCostProgram (Repeat(v,p')))
                        + (costVar v) + (costProgram p')
     | Define (s,v) -> (valuesCostProgram (Define (s,v)))
-                      + costVar v
+                      + costVar (Some v)
     | Integrate(v1,v2,(v3,v4,v5,v6)) ->
-            (ValuesCostProgram (Integrate(v1,v2,(v3,v4,v5,v6)))
+            (valuesCostProgram (Integrate(v1,v2,(v3,v4,v5,v6))))
           + costVar v1
           + (match v2 with None -> 0 | Some _ -> 1)
           + costVar v3

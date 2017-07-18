@@ -10,6 +10,7 @@ js:
 	    -syntax camlp4o \
 	    -plugin-tag "package(js_of_ocaml.ocamlbuild)" Main_js.byte ;\
 	    js_of_ocaml +graphics.js +weak.js --opt 3 Main_js.byte \
+	    --disable genprim \
 	    -o Main.js
 
 native:

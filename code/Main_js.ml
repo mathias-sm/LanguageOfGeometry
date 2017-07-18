@@ -88,7 +88,7 @@ let drawProgram _ =
                     let normalOutput = Html.getElementById "normalOutput" in
                     normalOutput##innerHTML <-
                         Js.string (Printf.sprintf "Program's cost : %d"
-                                    (costProgram program))
+                                    (costProgram program)) ;
                     interpret program noise
             | None -> ())
     with

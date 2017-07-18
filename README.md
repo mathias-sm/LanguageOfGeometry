@@ -13,5 +13,9 @@ Mainly:
 * `opam`, and then you can install `opam install ocamlbuild ocamlfind lwt
   js_of_ocaml js_of_ocaml-ocamlbuild js_of_ocaml-camlp4 js_of_ocaml-lwt menhir
   camlimages` and you're good to go
+
+* I would also recommend installing `core` and `merlin` if you plan to edit
+  files.
+
 * `pandoc` - Note that a recent enough version is required as I'm using the
   recently added `--syntax-definition=` option.
