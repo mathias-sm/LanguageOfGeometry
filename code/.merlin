@@ -1,4 +1,4 @@
 S .
 B _build/
-PKG core lwt js_of_ocaml.graphics js_of_ocaml.syntax js_of_ocaml-lwt.logger lwt.log camlp4 js_of_ocaml-camlp4 camlimages
+PKG core lwt js_of_ocaml.graphics js_of_ocaml.syntax gg vg vg.cairo lwt.log camlp4 js_of_ocaml-camlp4 camlimages
 EXT lwt

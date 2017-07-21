@@ -15,6 +15,7 @@
             <item> on </item>
             <item> off </item>
             <item> unit_loop </item>
+            <item> unit </item>
             <item> unit_distance </item>
             <item> unit_angle </item>
             <item> unit_speed </item>

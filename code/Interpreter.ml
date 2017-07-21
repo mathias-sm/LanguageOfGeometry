@@ -222,44 +222,59 @@ let rec evaluateVarHelper v htbl_var = match v with
         else raise (MalformedProgram(s ^ "unknown in evaluateVar"))
 in let v,_ = evaluateVarHelper v htbl_var in v
 
-let interpret program noise =
+let interpret : canvas -> program -> canvas =
+    fun canvas program  ->
     let has_started = ref false in
-    let rec inter program htbl_pos htbl_stroke htbl_var curr_state =
+    let rec inter canvas program htbl_pos htbl_stroke htbl_var curr_state =
         match program with
         | SavePos name ->
             let save_state =
                 {curr_state with x = curr_state.x} in
-            Hashtbl.add htbl_pos name save_state
+            Hashtbl.add htbl_pos name save_state ;
+            canvas
         | SaveStroke name ->
             let save_state =
                 {curr_state with x = curr_state.x} in
-            Hashtbl.add htbl_stroke name save_state
+            Hashtbl.add htbl_stroke name save_state ;
+            canvas
         | LoadPos name ->
             (try
                 replace_pos curr_state (Hashtbl.find htbl_pos name) ;
-                moveto curr_state.x curr_state.y
+                moveto canvas curr_state.x curr_state.y
             with _ -> raise (MalformedProgram
                                 (Printf.sprintf "%s non existent" name)
                             ))
         | LoadStroke name ->
-            (try replace_stroke curr_state (Hashtbl.find htbl_stroke name)
+            (try
+                replace_stroke curr_state (Hashtbl.find htbl_stroke name) ;
+                canvas
             with _ -> raise (MalformedProgram
                                 (Printf.sprintf "%s non existent" name)
                             ))
         | Turn f ->
                 let angle : float = match f with None -> unitTurn | Some(f') ->
                     evaluateVar f' htbl_var in
-                if !has_started then curr_state.face <- curr_state.face +. angle
+                if !has_started
+                    then curr_state.face <- curr_state.face +. angle ;
+                canvas
         | Concat (p1,p2) ->
-            inter p1 htbl_pos htbl_stroke htbl_var curr_state ;
-            inter p2 htbl_pos htbl_stroke htbl_var curr_state
+            let new_canvas =
+                inter canvas p1 htbl_pos htbl_stroke htbl_var curr_state
+            in inter new_canvas p2 htbl_pos htbl_stroke htbl_var curr_state
         | Repeat (n, pr) ->
-            let n' = (match n with
+            let n' = int_of_float (match n with
                 | None -> float_of_int unitLoop
-                | Some v -> evaluateVar  v htbl_var) in
-            for i = 1 to (int_of_float n') do
-                inter pr htbl_pos htbl_stroke htbl_var curr_state
-            done
+                | Some v -> evaluateVar v htbl_var) in
+            (*for i = 1 to (int_of_float n') do*)
+                (*inter pr htbl_pos htbl_stroke htbl_var curr_state*)
+            (*done*)
+            let rec helper n canvas = match n with
+            | 0 -> canvas
+            | n ->
+                let new_canvas =
+                    inter canvas pr htbl_pos htbl_stroke htbl_var curr_state
+                in helper (n-1) new_canvas
+            in if n' <= 0 then canvas else helper n' canvas
         | Integrate (f, pen, (speed,accel,angularSpeed,angularAccel)) ->
             let f = match f with None -> unitTime
                     | Some v -> evaluateVar v htbl_var in
@@ -281,16 +296,18 @@ let interpret program noise =
             curr_state.angularAccel <- angularAccel ;
             let pen = match pen with | None -> true | Some b -> b in
             if pen then has_started := true ;
+            let r_canvas = ref canvas in
             if !has_started then begin
-                for i = 0 to (int_of_float (100. *. pi *. f)) do
+                for i = 0 to (int_of_float (50. *. pi *. f)) do
                     let futur_x =
                         curr_state.x
                      +. (curr_state.speed /. 10.) *. cos(curr_state.face)
                     and futur_y =
                         curr_state.y
                      +. (curr_state.speed /. 10.) *. sin(curr_state.face) in
-                    if pen then lineto futur_x futur_y
-                    else moveto futur_x futur_y ;
+                    r_canvas :=
+                        if pen then lineto !r_canvas futur_x futur_y
+                        else moveto !r_canvas futur_x futur_y ;
                     curr_state.x <- futur_x ;
                     curr_state.y <- futur_y ;
                     curr_state.face <-
@@ -301,15 +318,16 @@ let interpret program noise =
                         curr_state.angularSpeed +. (curr_state.angularAccel /.
                         10000000.)
                 done
-            end
-        | Define (name,v) -> Hashtbl.add htbl_var name v
+            end ;
+            !r_canvas
+        | Define (name,v) -> Hashtbl.add htbl_var name v ; canvas
     in let initial_state =
-        { x = middle_x ()
-        ; y = middle_y ()
+        { x = middle_x canvas
+        ; y = middle_y canvas
         ; face = 0.
         ; speed = 1.
         ; accel = 0.
         ; angularSpeed = 0.
         ; angularAccel = 0. }
     in
-    inter program  (Hashtbl.create 101) (Hashtbl.create 101) (Hashtbl.create 101) initial_state
+    inter canvas program  (Hashtbl.create 101) (Hashtbl.create 101) (Hashtbl.create 101) initial_state

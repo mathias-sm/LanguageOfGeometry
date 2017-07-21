@@ -10,9 +10,8 @@ What you need to build this
 
 Mainly:
 * `ocaml`
-* `opam`, and then you can install `opam install ocamlbuild ocamlfind lwt
-  js_of_ocaml js_of_ocaml-ocamlbuild js_of_ocaml-camlp4 js_of_ocaml-lwt menhir
-  camlimages` and you're good to go
+* `opam`, and then you can install `opam install ocamlbuild ocamlfind lwt.2.7.1
+  js_of_ocaml js_of_ocaml-ocamlbuild js_of_ocaml-camlp4 menhir camlimages uutf otfm js_of_ocaml cairo2 vg` and you're good to go
 
 * I would also recommend installing `core` and `merlin` if you plan to edit
   files.

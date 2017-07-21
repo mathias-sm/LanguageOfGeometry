@@ -1,3 +1,6 @@
+open Vg
+open Gg
+
 (* Some utils values and functions *)
 
 let pi = 4. *. atan(1.)
@@ -36,3 +39,23 @@ let defaultSpeed = 1.
 let defaultAccel = 0.
 let defaultAngularSpeed = 0.
 let defaultAngularAccel = 0.
+
+let get_infos d_from_origin box canvas =
+    let d2 = 2. *. d_from_origin in
+    let view_crop = Gg.Box2.inter
+                box
+                (Gg.Box2.v (Gg.P2.v 0. 0.) (Gg.Size2.v d2 d2)) in
+    let s = Gg.Box2.size view_crop in
+    let o = Gg.Box2.o view_crop in
+    let dim = max (Gg.P2.x s) (Gg.P2.y s) in
+    let offsetx = (Gg.P2.x s -. dim) /. 2. in
+    let offsety = (Gg.P2.y s -. dim) /. 2. in
+    let view = Gg.Box2.v
+        (Gg.P2.v (Gg.P2.x o +. offsetx) (Gg.P2.y o +. offsety))
+        (Gg.P2.v dim dim) in
+    (*let size = Size2.v (d_from_origin +. maxdim) (d_from_origin +. maxdim) in*) 
+    let size = Size2.v (2. *. d_from_origin) (2. *. d_from_origin) in
+    let area = `O { P.o with P.width = dim /. d2 } in
+    let black = I.const Color.black in
+    let image = I.cut ~area canvas black in
+    (view,size,image)

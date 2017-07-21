@@ -1,6 +1,7 @@
 module Html = Dom_html
 open Interpreter
-open Graphics_js
+open Plotter
+open Renderer_js
 open Interpreter
 open Printf
 open Lexer
@@ -8,13 +9,9 @@ open Lexing
 
 exception MalformedProgram of string
 
-let console = Lwt_log_js.console
-
 let showError msg = 
   let errorOutput = Html.getElementById "errorOutput" in
-  errorOutput##innerHTML <- Js.string msg ;
-  Lwt.ignore_result
-      (Lwt_log_core.log ~logger:console ~level:Lwt_log_core.Error msg)
+  errorOutput##innerHTML <- Js.string msg
 
 let print_pos lexbuf = 
     let pos = lexbuf.lex_curr_p in
@@ -69,11 +66,8 @@ let unsupported_messages () =
   Dom.appendChild overlay table;
   Dom.appendChild (doc##body) overlay
 
-let drawProgram _ =
-    clear_graph () ;
-    let w = size_x ()
-    and h = size_y () in
-    moveto (w/2) (h/2) ;
+let drawProgram c =
+    let internal_c = new_canvas () in
     let textarea_interne = Html.getElementById "program" in
     let textarea_coerced =
         (Js.Opt.get
@@ -89,7 +83,8 @@ let drawProgram _ =
                     normalOutput##innerHTML <-
                         Js.string (Printf.sprintf "Program's cost : %d"
                                     (costProgram program)) ;
-                    interpret program noise
+                    let canvas = interpret internal_c program in
+                    paint_on_html_canvas canvas c
             | None -> ())
     with
         | Interpreter.MalformedProgram(error_message) -> showError error_message
@@ -104,10 +99,10 @@ let start _ =
      let width = whereToDraw##clientWidth in
      let canvas = create_canvas width (width/2) in
      Dom.appendChild whereToDraw canvas;
-     let c = canvas##getContext (Html._2d_) in
-     Graphics_js.open_canvas (c##canvas);
+     (*let c = canvas##getContext (Html._2d_) in*)
+     (*Graphics_js.open_canvas (c##canvas);*)
      let button = Html.getElementById "interpret" in
-     button##onclick <- Dom_html.handler drawProgram ;
+     button##onclick <- Dom_html.handler (fun _ -> drawProgram canvas) ;
      Lwt.return ());
   Js._false
 
