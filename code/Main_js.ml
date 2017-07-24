@@ -75,20 +75,25 @@ let drawProgram c =
             (fun () -> failwith "Zut.") in
     let textarea_jstring = textarea_coerced##value in
     let program_string = Js.to_string textarea_jstring in
+    let normalOutput = Html.getElementById "normalOutput" in
+    normalOutput##innerHTML <- Js.string ("") ;
     (try 
         (match read_program program_string with
             | Some (noise, program) ->
                     showError "" ;
-                    let normalOutput = Html.getElementById "normalOutput" in
                     normalOutput##innerHTML <-
                         Js.string (Printf.sprintf "Program's cost : %d"
                                     (costProgram program)) ;
-                    let canvas = interpret internal_c program in
+                    let canvas =
+                        try interpret internal_c program
+                        with Interpreter.MalformedProgram(s) -> showError s ;
+                        failwith("error")
+
+                    in
                     paint_on_html_canvas canvas c
             | None -> ())
-    with
-        | Interpreter.MalformedProgram(error_message) -> showError error_message
-    );
+    with MalformedProgram(error_message) -> showError error_message
+    ) ;
     Js._true
 
 
@@ -99,8 +104,6 @@ let start _ =
      let width = whereToDraw##clientWidth in
      let canvas = create_canvas width (width/2) in
      Dom.appendChild whereToDraw canvas;
-     (*let c = canvas##getContext (Html._2d_) in*)
-     (*Graphics_js.open_canvas (c##canvas);*)
      let button = Html.getElementById "interpret" in
      button##onclick <- Dom_html.handler (fun _ -> drawProgram canvas) ;
      Lwt.return ());

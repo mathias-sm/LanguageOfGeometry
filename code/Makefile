@@ -9,7 +9,7 @@ js:
 	    -package vg \
 	    -package vg.htmlc \
 	    -syntax camlp4o \
-	    -plugin-tag "package(js_of_ocaml.ocamlbuild)" Main_js.byte ;\
+	    Main_js.byte ;\
 	    js_of_ocaml +weak.js --opt 3 Main_js.byte \
 	    --disable genprim \
 	    -o Main.js
@@ -28,14 +28,19 @@ native:
 	    -package vg.cairo \
 	    Main.native
 
-html: index ex
+html: index ex sandbox
 
 index:
 	$(pandoc) whitePaper.md \
 	    -A numLines.js \
 	    | $(sed) \
 	    > index.html
-	#$(pandoc) whitePaper.md | $(sed) > index.html
+
+sandbox:
+	$(pandoc) sandbox.md \
+	    -A numLines.js \
+	    | $(sed) \
+	    > sandbox.html
 
 ex:
 	./generate_examples_index.sh | \

@@ -471,17 +471,29 @@ Sandbox for the language
 You may look for inspiration [here](./examples/)
 
 <form>
-<textarea id="program" rows="10" autocomplete="off" autocorrect="off"
-autocapitalize="off" spellcheck="false">NOISE=0.005;
-SetValues(speed=1,angularAccel=0.00025) ;
-Integrate(400)</textarea>
-<div class="centerize">
-<button id="interpret" type="button">Interpret!</button>
-</div>
-</form>
+<textarea id="program" rows="20" autocomplete="off" autocorrect="off"
+autocapitalize="off" spellcheck="false">
+dix = Next(Next(Double(Double(Double(unit))))) ;
+ n = Next(Next(unit)) ;
+ Repeat(dix) {
+  Embed {
+   Repeat(n) {
+    Integrate(t=Divide(Half(unit),n)) ;
+    Turn(angle=Divide(Double(Double(unit)),n))
+   }
+  } ;
+  n = Next(n) ;
+ Integrate(t=Half(Half(unit)),pen=off)
+}</textarea>
+
+<div class="centerize"> <button id="interpret"
+type="button">Interpret!</button> </div> </form>
+
 <div id="errorOutput"></div>
 <div id="normalOutput"></div>
+
 <div id="programCanvas"></div>
+
 
 
 Let's now try to generate shapes

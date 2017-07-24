@@ -7,7 +7,6 @@ type canvas = Plotter.canvas
 
 let d_from_origin = 100.
 
-
 let paint_on_html_canvas : canvas -> Dom_html.canvasElement Js.t -> unit =
     fun (canvas, box) html_c ->
         (*Gg.Box2.pp (Format.std_formatter) box ;*)

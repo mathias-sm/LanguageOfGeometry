@@ -1,4 +1,3 @@
-%token <string> STRING
 %token <bool> PEN
 %token <string> VAR
 %token BEGIN_BLOCK
@@ -9,10 +8,7 @@
 %left COLON
 %token INTEGRATE
 %token REPEAT
-%token SAVE_POS
-%token SAVE_STROKE
-%token LOAD_POS
-%token LOAD_STROKE
+%token EMBED
 %token TURN
 %token DOUBLE
 %token HALF
@@ -20,13 +16,7 @@
 %token PREV
 %token OPPOS
 %token DIVIDE
-%token UNIT_TIME
-%token UNIT_ANGLE
-%token UNIT_LOOP
-%token UNIT_SPEED
-%token UNIT_ACCEL
-%token UNIT_ANGULAR_SPEED
-%token UNIT_ANGULAR_ACCEL
+%token UNIT
 %token ZERO
 %token COMMA_ARGS
 %token ARG_ANGLE
@@ -51,14 +41,8 @@ optional_comma:
     | {}
 
 expr:
-  | UNIT_TIME { Interpreter.UnitTime }
+  | UNIT { Interpreter.Unit }
   | ZERO { Interpreter.Zero }
-  | UNIT_ANGLE { Interpreter.UnitAngle }
-  | UNIT_LOOP { Interpreter.UnitLoop }
-  | UNIT_SPEED { Interpreter.UnitSpeed }
-  | UNIT_ACCEL { Interpreter.UnitAccel }
-  | UNIT_ANGULAR_SPEED { Interpreter.UnitAngularSpeed }
-  | UNIT_ANGULAR_ACCEL { Interpreter.UnitAngularAccel }
   | DOUBLE ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Double (e) }
   | HALF ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Half (e) }
   | NEXT ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Next (e) }
@@ -119,10 +103,7 @@ integrate:
 
 value:
     | t = turn { t }
-    | SAVE_POS ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.SavePos s}
-    | SAVE_STROKE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.SaveStroke s}
-    | LOAD_POS ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.LoadPos s}
-    | LOAD_STROKE ; BEGIN_ARGS ; s = STRING ; END_ARGS {Interpreter.LoadStroke s}
+    | EMBED ; BEGIN_BLOCK ; p = value ; END_BLOCK {Interpreter.Embed p}
     | p1 = value ; COLON ; p2 = value {Interpreter.Concat (p1,p2)}
     | s = VAR ; EQUALS ; e = expr {Interpreter.Define (s,e)}
     | r = repeat { r }

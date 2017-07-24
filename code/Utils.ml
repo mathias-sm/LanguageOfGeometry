@@ -28,18 +28,6 @@ let my_print_bool b = match b with
 
 (* The relevant units *)
 
-let unitLoop = 2
-let unitTime = pi2
-let unitTurn = pis2
-let baseSpeed = 1.
-let baseAccel = 1.
-let baseAngularSpeed = 1.
-let baseAngularAccel = 1.
-let defaultSpeed = 1.
-let defaultAccel = 0.
-let defaultAngularSpeed = 0.
-let defaultAngularAccel = 0.
-
 let get_infos d_from_origin box canvas =
     let d2 = 2. *. d_from_origin in
     let view_crop = Gg.Box2.inter
@@ -51,8 +39,8 @@ let get_infos d_from_origin box canvas =
     let offsetx = (Gg.P2.x s -. dim) /. 2. in
     let offsety = (Gg.P2.y s -. dim) /. 2. in
     let view = Gg.Box2.v
-        (Gg.P2.v (Gg.P2.x o +. offsetx) (Gg.P2.y o +. offsety))
-        (Gg.P2.v dim dim) in
+        (Gg.P2.v (Gg.P2.x o +. offsetx -. 1.) (Gg.P2.y o +. offsety -. 1.))
+        (Gg.P2.v (dim +. 2.) (dim +. 2.)) in
     (*let size = Size2.v (d_from_origin +. maxdim) (d_from_origin +. maxdim) in*) 
     let size = Size2.v (2. *. d_from_origin) (2. *. d_from_origin) in
     let area = `O { P.o with P.width = dim /. d2 } in

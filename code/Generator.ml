@@ -2,7 +2,7 @@ open Interpreter
 
 exception InternalGenerationError of string
 
-let dummy_var = UnitTime
+let dummy_var = Unit
 let dummy_program = Turn(None)
 
 let valuesCostVar v = (1. /. (float_of_int (Interpreter.valuesCostVar v)))
@@ -14,13 +14,12 @@ let valuesCostProgram p = match p with
     | _ -> (1. /. (float_of_int (Interpreter.valuesCostProgram p)))
 
 let total_var_op   = 0.
-    (*+ (valuesCostVar (Name ""))*)
-    +. (valuesCostVar (Double UnitTime))
-    +. (valuesCostVar (Half UnitTime))
-    +. (valuesCostVar (Next UnitTime))
-    +. (valuesCostVar (Prev UnitTime))
-    +. (valuesCostVar (Oppos UnitTime))
-    +. (valuesCostVar (Divide (UnitTime,UnitTime)))
+    +. (valuesCostVar (Double Unit))
+    +. (valuesCostVar (Half Unit))
+    +. (valuesCostVar (Next Unit))
+    +. (valuesCostVar (Prev Unit))
+    +. (valuesCostVar (Oppos Unit))
+    +. (valuesCostVar (Divide (Unit,Unit)))
 
 let cumsum_op_htbl = Hashtbl.create 101
 
@@ -40,29 +39,18 @@ let cumsum_op var =
         Hashtbl.add cumsum_op_htbl var value ;
         value
 
-
 let total_var_unit = 0.
-    +. (valuesCostVar UnitTime)
-    +. (valuesCostVar UnitLoop)
-    +. (valuesCostVar UnitAccel)
-    +. (valuesCostVar UnitAngle)
-    (*+. (valuesCostVar UnitSpeed)*)
-    (*+. (valuesCostVar UnitAngularSpeed)*)
-    (*+. (valuesCostVar UnitAngularAccel)*)
+    +. (valuesCostVar Unit)
     +. (valuesCostVar Zero)
+    +. (valuesCostVar (Name ""))
 
 let cumsum_unit_htbl = Hashtbl.create 101
 
 let cumsum_unit var =
     let rec helper var = match var with
-    | UnitTime -> valuesCostVar UnitTime
-    | UnitLoop -> helper UnitTime +. (valuesCostVar UnitTime)
-    | UnitAccel -> helper UnitLoop +. (valuesCostVar UnitTime)
-    | UnitAngle -> helper UnitAccel +. (valuesCostVar UnitTime)
-    (*| UnitSpeed -> helper UnitAngle + (valuesCostVar UnitTime)*)
-    (*| UnitAngularSpeed -> helper UnitSpeed + (valuesCostVar UnitTime)*)
-    (*| UnitAngularAccel -> helper UnitAngularSpeed + (valuesCostVar UnitTime)*)
-    | Zero -> helper UnitAngle +. (valuesCostVar UnitTime)
+    | Unit -> valuesCostVar Unit
+    | Zero -> helper Unit +. (valuesCostVar Unit)
+    | Name _ -> helper Zero +. (valuesCostVar (Name ""))
     | _ -> raise (InternalGenerationError("in cumsum_unit"))
     in if Hashtbl.mem cumsum_unit_htbl var
     then Hashtbl.find cumsum_unit_htbl var
@@ -73,13 +61,9 @@ let cumsum_unit var =
 
 let total_program = 0.
     +. (valuesCostProgram (Turn(None)))
-    +. (valuesCostProgram (SavePos("")))
-    +. (valuesCostProgram (SaveStroke("")))
-    +. (valuesCostProgram (LoadPos("")))
-    +. (valuesCostProgram (LoadStroke("")))
+    +. (valuesCostProgram (Embed(dummy_program)))
     +. (valuesCostProgram (Concat(dummy_program,dummy_program)))
     +. (valuesCostProgram (Repeat(None,dummy_program)))
-    (*+. (valuesCostProgram (Define("",UnitTime)))*)
     +. (valuesCostProgram (Integrate(None,None,(None,None,None,None))))
 
 let cumsum_program_htbl = Hashtbl.create 101
@@ -87,25 +71,18 @@ let cumsum_program_htbl = Hashtbl.create 101
 let cumsum_program p =
     let rec helper p = match p with
     | Turn v -> valuesCostProgram (Turn(v))
-    | SavePos v -> (helper (Turn(None))) +. (valuesCostProgram (SavePos(v)))
-    | SaveStroke v ->
-        (helper (SavePos(v))) +. (valuesCostProgram (SaveStroke(v)))
-    | LoadPos v ->
-        (helper (SaveStroke(v))) +. (valuesCostProgram (LoadPos(v)))
-    | LoadStroke v ->
-        (helper (LoadPos(v))) +. (valuesCostProgram (LoadStroke(v)))
+    | Embed p -> (helper (Turn(None))) +. (valuesCostProgram (Embed(p)))
     | Concat (p1,p2) ->
-        (helper (LoadStroke(""))) +. (valuesCostProgram (Concat(p1,p2)))
+        (helper (Embed(dummy_program))) +. (valuesCostProgram (Concat(p1,p2)))
     | Repeat (r,p) ->
         (helper (Concat(dummy_program,dummy_program)))
         +. (valuesCostProgram (Repeat(r,p)))
-    (*| Define (s,v) ->*)
-        (*(helper (Repeat(None,dummy_program)))*)
-        (*+ (valuesCostProgram (Define(s,v)))*)
-    | Integrate (v1,v2,v3) ->
+    | Define (s,v) ->
         (helper (Repeat(None,dummy_program)))
+        +. (valuesCostProgram (Define(s,v)))
+    | Integrate (v1,v2,v3) ->
+        (helper (Define("",dummy_var)))
         +. (valuesCostProgram (Integrate(v1,v2,v3)))
-    | _ -> raise (InternalGenerationError("in sumsum_program"))
     in if Hashtbl.mem cumsum_program_htbl p
     then Hashtbl.find cumsum_program_htbl p
     else
@@ -113,65 +90,94 @@ let cumsum_program p =
         Hashtbl.add cumsum_program_htbl p value ;
         value
 
-let rec get_random_var : unit -> var = fun () ->
+let pick_random_in_list l =
+    let length = List.length l in
+    let ith = Random.int length in
+    List.nth l ith
+
+let rec get_random_var : string list -> var = fun var_list ->
     if Random.bool () then
         match Random.float total_var_unit with
-        | n when n < cumsum_unit UnitTime -> UnitTime
-        | n when n < cumsum_unit UnitLoop -> UnitLoop
-        | n when n < cumsum_unit UnitAccel -> UnitAccel
-        | n when n < cumsum_unit UnitAngle -> UnitAngle
-        (*| n when n < cumsum_unit UnitSpeed -> UnitSpeed*)
-        (*| n when n < cumsum_unit UnitAngularSpeed -> UnitAngularSpeed*)
-        (*| n when n < cumsum_unit UnitAngularAccel -> UnitAngularAccel*)
+        | n when n < cumsum_unit Unit -> Unit
         | n when n < cumsum_unit Zero -> Zero
-        | _ -> raise (InternalGenerationError("in total_var_unit"))
+        | n when n < cumsum_unit (Name "") ->
+            begin
+                match var_list with 
+                | [] -> get_random_var var_list
+                | _ -> Name(pick_random_in_list var_list)
+            end
+        | n ->
+            raise (InternalGenerationError("in total_var_unit"))
     else
         match Random.float total_var_op with
         | n when n < cumsum_op (Double(dummy_var)) ->
-            Double (get_random_var ())
+            Double (get_random_var var_list)
         | n when n < cumsum_op (Half(dummy_var)) ->
-            Half (get_random_var ())
+            Half (get_random_var var_list)
         | n when n < cumsum_op (Next(dummy_var)) ->
-            Next (get_random_var ())
+            Next (get_random_var var_list)
         | n when n < cumsum_op (Prev(dummy_var)) ->
-            Prev (get_random_var ())
+            Prev (get_random_var var_list)
         | n when n < cumsum_op (Oppos(dummy_var)) ->
-            Oppos (get_random_var ())
+            Oppos (get_random_var var_list)
         | n when n < cumsum_op (Divide(dummy_var,dummy_var)) ->
-            Divide (get_random_var (), get_random_var ())
+            Divide (get_random_var var_list, get_random_var var_list)
         | _ -> raise (InternalGenerationError("in total_var_op"))
 
 
-let rec generate_random : unit -> program = fun () ->
+let rec rec_generate_random : string list -> (string list * program) =
+    fun var_list ->
     match Random.float total_program with
     | n when n < cumsum_program (Turn(None)) ->
         let b = Random.bool () in
-        let var = if b then Some(get_random_var ()) else None in
-        Turn(var)
-    | n when n < cumsum_program (SavePos("")) ->
-        SavePos("pos")
-    | n when n < cumsum_program (SaveStroke("")) ->
-        SavePos("stroke")
-    | n when n < cumsum_program (LoadPos("")) ->
-        LoadPos("pos")
-    | n when n < cumsum_program (LoadStroke("")) ->
-        LoadStroke("stroke")
+        let var = if b then Some(get_random_var var_list) else None in
+        (var_list,Turn(var))
+    | n when n < cumsum_program (Embed(dummy_program)) ->
+        let l,p = rec_generate_random var_list in
+        (l,Embed(p))
     | n when n < cumsum_program (Concat(dummy_program,dummy_program)) ->
-        Concat(generate_random (),generate_random ())
+        let l,p = rec_generate_random var_list in
+        let l',p' = rec_generate_random l in
+        (l',Concat(p,p'))
     | n when n < cumsum_program (Repeat(None,dummy_program)) ->
         let b = Random.bool () in
-        let var = if b then Some(get_random_var ()) else None in
-        Repeat(var ,generate_random ())
+        let var = if b then Some(get_random_var var_list) else None in
+        let l,p = rec_generate_random var_list in
+        l,Repeat(var, p)
+    | n when n < cumsum_program (Define("",dummy_var)) ->
+        let var = get_random_var var_list in
+        let length = List.length var_list in
+        let new_var_name = Printf.sprintf "v%d" (length+1) in
+        ((new_var_name::var_list),Define(new_var_name,var))
     | n when n < cumsum_program (Integrate(None,None,(None,None,None,None))) ->
         let varArray = Array.make 5 None in
         for i = 0 to 4 do
-            if Random.int 8 = 0 then
-            varArray.(i) <- Some(get_random_var ())
+            if Random.int 10 = 0 then
+            varArray.(i) <- Some(get_random_var var_list)
         done ;
-        Integrate(varArray.(0),
-                 (if Random.bool () then None else Some(Random.bool ())),
-                 (varArray.(1),
-                  varArray.(2),
-                  varArray.(3),
-                  varArray.(4)))
-    | _ -> raise (InternalGenerationError("in generate_random"))
+        (var_list,
+         Integrate(varArray.(0),
+                  (if Random.bool () then None else Some(Random.bool ())),
+                  (varArray.(1),
+                   varArray.(2),
+                   varArray.(3),
+                   varArray.(4))))
+    | _ -> raise (InternalGenerationError("in rec_generate_random"))
+
+let generate_random : unit -> program =
+    fun () ->
+        let (_,p) = match Random.int 10 with
+        | n when n < 1 -> rec_generate_random []
+        | n when n < 3 ->
+            let p1 = Define("v1", get_random_var []) in
+            let (_,p2) = rec_generate_random ["v1"] in
+            ([],Concat(p1,p2))
+        | n when n < 6 ->
+            let (l,p1) = rec_generate_random [] in
+            let (_,p2) = rec_generate_random l in
+            ([],Concat(p1,p2))
+        | _ ->
+            let var = get_random_var [] in
+            let l,p = rec_generate_random [] in
+            ([], Repeat(Some var,p))
+        in p

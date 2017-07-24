@@ -3,10 +3,7 @@
     <highlighting>
         <list name="Keywords">
             <item> Turn </item>
-            <item> LoadPos </item>
-            <item> LoadStroke </item>
-            <item> SavePos </item>
-            <item> SaveStroke </item>
+            <item> Embed </item>
             <item> Integrate </item>
             <item> Repeat </item>
             <item> ; </item>
@@ -14,14 +11,7 @@
         <list name="Values">
             <item> on </item>
             <item> off </item>
-            <item> unit_loop </item>
             <item> unit </item>
-            <item> unit_distance </item>
-            <item> unit_angle </item>
-            <item> unit_speed </item>
-            <item> unit_accel </item>
-            <item> unit_angular_speed </item>
-            <item> unit_angular_accel </item>
             <item> 0 </item>
             <item> Oppos </item>
             <item> Double </item>

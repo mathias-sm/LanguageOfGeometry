@@ -5,8 +5,7 @@ open Plotter
 open Utils
 
 type var =    Name of string
-            | UnitAngle | UnitTime | UnitLoop
-            | UnitSpeed | UnitAccel | UnitAngularSpeed | UnitAngularAccel
+            | Unit
             | Zero
             | Double of var | Half of var
             | Next of var | Prev of var
@@ -19,10 +18,7 @@ type innerValues = var option
                  * var option
 
 type program = Concat of program * program
-             | SavePos of string
-             | SaveStroke of string
-             | LoadPos of string
-             | LoadStroke of string
+             | Embed of program
              | Turn of var option
              | Repeat of var option * program
              | Integrate of var option * bool option * innerValues
@@ -38,18 +34,10 @@ type internal = { mutable x             : float
 
 exception MalformedProgram of string
 
-type stack = internal list
-
 let rec my_print_var v = match v with
     | Name s -> s
     | Zero -> "0"
-    | UnitAngle -> "unit_angle"
-    | UnitTime -> "unit_time"
-    | UnitLoop -> "unit_loop"
-    | UnitSpeed -> "unit_speed"
-    | UnitAccel -> "unit_accel"
-    | UnitAngularSpeed -> "unit_angular_speed"
-    | UnitAngularAccel -> "unit_angular_accel"
+    | Unit -> "unit"
     | Double v' -> "Double(" ^ (my_print_var v') ^ ")"
     | Half v' -> "Half(" ^ (my_print_var v') ^ ")"
     | Next v' -> "Next(" ^ (my_print_var v') ^ ")"
@@ -60,10 +48,6 @@ let rec my_print_var v = match v with
 
 let (++) pr1 pr2 = Concat(pr1, pr2)
 
-let replace_pos curr future =
-    curr.x <- future.x ;
-    curr.y <- future.y
-
 let replace_stroke curr future =
     curr.face <- future.face ;
     curr.speed <- future.speed ;
@@ -71,8 +55,24 @@ let replace_stroke curr future =
     curr.angularSpeed <- future.angularSpeed ;
     curr.angularAccel <- future.angularAccel
 
+let empty_state =
+        { x = -1.
+        ; y = -1.
+        ; face = 0.
+        ; speed = 1.
+        ; accel = 0.
+        ; angularSpeed = 0.
+        ; angularAccel = 0. }
+
+
 let replace curr future =
-    replace_pos curr future ; replace_stroke curr future
+    curr.x <- future.x ;
+    curr.y <- future.y ;
+    curr.face <- future.face ;
+    curr.speed <- future.speed ;
+    curr.accel <- future.accel ;
+    curr.angularSpeed <- future.angularSpeed ;
+    curr.angularAccel <- future.angularAccel
 
 let (<<-) curr future = replace curr future
 
@@ -80,19 +80,19 @@ let pp_program channel program =
     let rec pp_helper program tabs = match program with
         | Concat (p1,p2) ->
                 pp_helper p1 tabs ; Printf.fprintf channel " ;\n" ; pp_helper p2 tabs
-        | SavePos name -> Printf.fprintf channel "%sSavePos(\"%s\")" tabs name
-        | SaveStroke name -> Printf.fprintf channel "%sSaveStroke(\"%s\")" tabs name
-        | LoadPos name -> Printf.fprintf channel "%sLoadPos(\"%s\")" tabs name
-        | LoadStroke name -> Printf.fprintf channel "%sLoadStroke(\"%s\")" tabs name
         | Turn f -> Printf.fprintf channel "%sTurn%s" tabs
             (match f with
             | None -> ""
             | Some(f) -> sprintf "(angle=%s)" (my_print_var f))
+        | Embed pr ->
+            Printf.fprintf channel "%sEmbed {\n" tabs ;
+            pp_helper pr (Printf.sprintf "%s  " tabs) ;
+            Printf.fprintf channel "\n%s}" tabs
         | Repeat (n,pr) ->
             Printf.fprintf channel "%sRepeat%s {\n" tabs
                 (match n with
                 | None -> ""
-                | Some(m) when m = UnitLoop -> ""
+                | Some(m) when m = Unit -> ""
                 | Some(m) -> "("^my_print_var m^")");
             pp_helper pr (Printf.sprintf "%s  " tabs) ;
             Printf.fprintf channel "\n%s}" tabs
@@ -115,12 +115,9 @@ let pp_program channel program =
     pp_helper program "" ; print_newline ()
 
 let valuesCostVar : var -> int =
-    let unit_cost = 1 in
     fun v -> match v with
-    | UnitTime -> unit_cost | UnitLoop -> unit_cost | UnitAccel -> unit_cost
-    | UnitAngle -> unit_cost | UnitSpeed -> unit_cost
-    | UnitAngularAccel -> unit_cost | UnitAngularSpeed -> unit_cost
-    | Zero -> unit_cost
+    | Unit -> 1
+    | Zero -> 1
     | Name _ -> 1
     | Double v' ->  1
     | Half v' ->  1
@@ -131,13 +128,7 @@ let valuesCostVar : var -> int =
 
 let costVar : var option -> int =
     let rec helper v = match v with
-        | UnitTime -> valuesCostVar UnitTime
-        | UnitLoop -> valuesCostVar UnitLoop
-        | UnitAccel -> valuesCostVar UnitAccel
-        | UnitAngle -> valuesCostVar UnitAngle
-        | UnitSpeed -> valuesCostVar UnitSpeed
-        | UnitAngularSpeed -> valuesCostVar UnitAngularSpeed
-        | UnitAngularAccel -> valuesCostVar UnitAngularAccel
+        | Unit -> valuesCostVar Unit
         | Zero -> valuesCostVar Zero
         | Name s -> valuesCostVar (Name s)
         | Double v' ->  (valuesCostVar (Double v')) + helper v'
@@ -153,10 +144,7 @@ let costVar : var option -> int =
 let valuesCostProgram : program -> int =
     fun p -> match p with
     | Turn _ -> 1
-    | SavePos _ -> 1
-    | SaveStroke _ -> 1
-    | LoadPos _ -> 1
-    | LoadStroke _ -> 1
+    | Embed _ -> 1
     | Concat (_,_) -> 1
     | Repeat (_,_) -> 1
     | Define (_,_) -> 1
@@ -165,10 +153,7 @@ let valuesCostProgram : program -> int =
 let rec costProgram : program -> int =
     fun p -> match p with
     | Turn v -> (valuesCostProgram (Turn v)) + (costVar v)
-    | SavePos s -> (valuesCostProgram (SavePos s))
-    | SaveStroke s -> (valuesCostProgram (SaveStroke s))
-    | LoadPos s -> (valuesCostProgram (LoadPos s))
-    | LoadStroke s -> (valuesCostProgram (LoadStroke s))
+    | Embed (p) -> (valuesCostProgram (Embed(p))) + costProgram p
     | Concat (p1,p2) -> (valuesCostProgram (Concat (p1,p2)))
                         + costProgram p1 + costProgram p2
     | Repeat (v,p') -> (valuesCostProgram (Repeat(v,p')))
@@ -185,110 +170,78 @@ let rec costProgram : program -> int =
           + costVar v6
 
 let evaluateVar v htbl_var =
-let rec evaluateVarHelper v htbl_var = match v with
-    | UnitTime -> (unitTime,fun () -> unitTime)
-    | UnitAngle -> (unitTurn,fun () -> unitTurn)
-    | UnitLoop -> (float_of_int unitLoop, fun () -> (float_of_int unitLoop))
-    | Zero -> (0., fun () -> 0.)
-    | UnitSpeed -> (baseSpeed, fun () -> baseSpeed)
-    | UnitAccel -> (baseAccel, fun () -> baseAccel)
-    | UnitAngularSpeed -> (baseAngularSpeed, fun () -> baseAngularSpeed)
-    | UnitAngularAccel -> (baseAngularAccel, fun () -> baseAngularAccel)
-    | Double v' ->
-        let v,u = (evaluateVarHelper v' htbl_var) in (2.*.v,u)
-    | Half v' ->
-        let v,u = (evaluateVarHelper v' htbl_var) in (v/.2.,u)
-    | Next v' ->
-        let v,u = (evaluateVarHelper v' htbl_var) in (v+.(u ()),u)
-    | Prev v' ->
-        let v,u = (evaluateVarHelper v' htbl_var) in (v-.(u ()),u)
-    | Oppos v' ->
-        let v,u = (evaluateVarHelper v' htbl_var) in ((-1.)*.v,u)
-    | Divide (v1,v2) ->
-        let (v1,u1) = evaluateVarHelper v1 htbl_var in
-        let (v2,u2) = evaluateVarHelper v2 htbl_var in
-        let r = v1 /. v2 in
-        if (u1 ()) = (u2 ()) then (r,u1)
-        else (r,
-            fun () -> (raise (MalformedProgram("Next/Prev over Divide is
-            ill-defined"))))
+    let rec evaluateVar_helper v htbl_var = match v with
+    | Unit -> 1.
+    | Zero -> 0.
+    | Double v' -> 2.*.(evaluateVar_helper v' htbl_var)
+    | Half v' -> (evaluateVar_helper v' htbl_var) /. 2.
+    | Prev v' -> (evaluateVar_helper v' htbl_var) -. 1.
+    | Next v' -> (evaluateVar_helper v' htbl_var) +. 1.
+    | Oppos v' -> (-1.)*.(evaluateVar_helper v' htbl_var)
+    | Divide (v1,v2) -> (evaluateVar_helper v1 htbl_var) /.
+    (evaluateVar_helper v2 htbl_var)
     | Name s ->
         if Hashtbl.mem htbl_var s then
             let value = Hashtbl.find htbl_var s in
             Hashtbl.remove htbl_var s ;
-            let v,u = evaluateVarHelper value htbl_var in
+            let v = evaluateVar_helper value htbl_var in
             Hashtbl.add htbl_var s value ;
-            (v,u)
+            v
         else raise (MalformedProgram(s ^ "unknown in evaluateVar"))
-in let v,_ = evaluateVarHelper v htbl_var in v
+    in match evaluateVar_helper v htbl_var with
+    | n when n = nan -> raise (MalformedProgram("Some var was NaN"))
+    | f -> f
 
 let interpret : canvas -> program -> canvas =
     fun canvas program  ->
     let has_started = ref false in
-    let rec inter canvas program htbl_pos htbl_stroke htbl_var curr_state =
+    let rec inter canvas program htbl_var curr_state =
         match program with
-        | SavePos name ->
+        | Embed p ->
             let save_state =
                 {curr_state with x = curr_state.x} in
-            Hashtbl.add htbl_pos name save_state ;
+            replace_stroke curr_state empty_state ;
+            let htbl_var' = Hashtbl.copy htbl_var in
+            let canvas =
+                inter canvas p htbl_var' curr_state in
+            replace curr_state save_state ;
             canvas
-        | SaveStroke name ->
-            let save_state =
-                {curr_state with x = curr_state.x} in
-            Hashtbl.add htbl_stroke name save_state ;
-            canvas
-        | LoadPos name ->
-            (try
-                replace_pos curr_state (Hashtbl.find htbl_pos name) ;
-                moveto canvas curr_state.x curr_state.y
-            with _ -> raise (MalformedProgram
-                                (Printf.sprintf "%s non existent" name)
-                            ))
-        | LoadStroke name ->
-            (try
-                replace_stroke curr_state (Hashtbl.find htbl_stroke name) ;
-                canvas
-            with _ -> raise (MalformedProgram
-                                (Printf.sprintf "%s non existent" name)
-                            ))
         | Turn f ->
-                let angle : float = match f with None -> unitTurn | Some(f') ->
+                let angle : float = match f with None -> 1. | Some(f') ->
                     evaluateVar f' htbl_var in
                 if !has_started
-                    then curr_state.face <- curr_state.face +. angle ;
+                    then curr_state.face <- curr_state.face +. angle *. pis2 ;
                 canvas
         | Concat (p1,p2) ->
             let new_canvas =
-                inter canvas p1 htbl_pos htbl_stroke htbl_var curr_state
-            in inter new_canvas p2 htbl_pos htbl_stroke htbl_var curr_state
+                inter canvas p1 htbl_var curr_state
+            in inter new_canvas p2 htbl_var curr_state
         | Repeat (n, pr) ->
+            has_started := true;
             let n' = int_of_float (match n with
-                | None -> float_of_int unitLoop
+                | None -> 2.
                 | Some v -> evaluateVar v htbl_var) in
-            (*for i = 1 to (int_of_float n') do*)
-                (*inter pr htbl_pos htbl_stroke htbl_var curr_state*)
-            (*done*)
             let rec helper n canvas = match n with
             | 0 -> canvas
             | n ->
                 let new_canvas =
-                    inter canvas pr htbl_pos htbl_stroke htbl_var curr_state
+                    inter canvas pr htbl_var curr_state
                 in helper (n-1) new_canvas
             in if n' <= 0 then canvas else helper n' canvas
         | Integrate (f, pen, (speed,accel,angularSpeed,angularAccel)) ->
-            let f = match f with None -> unitTime
+            let f = match f with None -> 1.
                     | Some v -> evaluateVar v htbl_var in
             let speed =
                 (match speed with None -> curr_state.speed
                     | Some v -> evaluateVar v htbl_var) and
             accel =
-                (match accel with None -> defaultAccel
+                (match accel with None -> curr_state.accel
                     | Some v -> evaluateVar v htbl_var) and
             angularSpeed =
-                (match angularSpeed with None -> defaultAngularSpeed
+                (match angularSpeed with None -> curr_state.angularSpeed
                     | Some v -> evaluateVar v htbl_var) and
             angularAccel =
-                (match angularAccel with None -> defaultAngularAccel
+                (match angularAccel with None -> curr_state.angularAccel
                     | Some v -> evaluateVar v htbl_var) in
             curr_state.speed <- speed ;
             curr_state.accel <- accel ;
@@ -298,20 +251,20 @@ let interpret : canvas -> program -> canvas =
             if pen then has_started := true ;
             let r_canvas = ref canvas in
             if !has_started then begin
-                for i = 0 to (int_of_float (50. *. pi *. f)) do
+                for i = 0 to (int_of_float (1000. *. pi *. f)) do
                     let futur_x =
                         curr_state.x
-                     +. (curr_state.speed /. 10.) *. cos(curr_state.face)
+                     +. (curr_state.speed /. 250.) *. cos(curr_state.face)
                     and futur_y =
                         curr_state.y
-                     +. (curr_state.speed /. 10.) *. sin(curr_state.face) in
+                     +. (curr_state.speed /. 250.) *. sin(curr_state.face) in
                     r_canvas :=
                         if pen then lineto !r_canvas futur_x futur_y
                         else moveto !r_canvas futur_x futur_y ;
                     curr_state.x <- futur_x ;
                     curr_state.y <- futur_y ;
                     curr_state.face <-
-                        curr_state.face +. (curr_state.angularSpeed /. (100.*.pi)) ;
+                        curr_state.face +. (curr_state.angularSpeed /. 500.) ;
                     curr_state.speed <-
                         curr_state.speed +. (curr_state.accel /. 2500.) ;
                     curr_state.angularSpeed <-
@@ -330,4 +283,4 @@ let interpret : canvas -> program -> canvas =
         ; angularSpeed = 0.
         ; angularAccel = 0. }
     in
-    inter canvas program  (Hashtbl.create 101) (Hashtbl.create 101) (Hashtbl.create 101) initial_state
+    inter canvas program (Hashtbl.create 101) initial_state
