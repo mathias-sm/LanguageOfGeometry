@@ -5,20 +5,27 @@ exception InternalGenerationError of string
 let dummy_var = Unit
 let dummy_program = Turn(None)
 
-let valuesCostVar v = (1. /. (float_of_int (Interpreter.valuesCostVar v)))
-let valuesCostProgram p = match p with
-    | Repeat(_,_) -> 3. *. (1. /. (float_of_int (Interpreter.valuesCostProgram p)))
-    | Integrate(_,_,_) -> 3. *. (1. /. (float_of_int (Interpreter.valuesCostProgram p)))
-    | Turn(_) -> 3. *. (1. /. (float_of_int (Interpreter.valuesCostProgram p)))
-    | Concat(_,_) -> 2. *. (1. /. (float_of_int (Interpreter.valuesCostProgram p)))
-    | _ -> (1. /. (float_of_int (Interpreter.valuesCostProgram p)))
+let valuesCostVar v =
+    let default = (1. /. (float_of_int (Interpreter.valuesCostVar v))) in
+    match v with
+     | Indefinite -> 0.1 *. default
+     | _ -> default
+
+let valuesCostProgram p =
+    let default = (1. /. (float_of_int (Interpreter.valuesCostProgram p))) in
+    match p with
+    | Repeat(_,_) -> 3. *. default
+    | Integrate(_,_,_) -> 3. *. default
+    | Turn(_) -> 3. *. default
+    | Concat(_,_) -> 2. *. default
+    | _ -> default
 
 let total_var_op   = 0.
     +. (valuesCostVar (Double Unit))
     +. (valuesCostVar (Half Unit))
     +. (valuesCostVar (Next Unit))
     +. (valuesCostVar (Prev Unit))
-    +. (valuesCostVar (Oppos Unit))
+    +. (valuesCostVar (Opposite Unit))
     +. (valuesCostVar (Divide (Unit,Unit)))
 
 let cumsum_op_htbl = Hashtbl.create 101
@@ -29,8 +36,8 @@ let cumsum_op var =
     | Half v -> helper (Double v) +. (valuesCostVar (Half v))
     | Next v -> helper (Half v) +. (valuesCostVar (Next v))
     | Prev v -> helper (Next v) +. (valuesCostVar (Prev v))
-    | Oppos v -> helper (Prev v) +. (valuesCostVar (Oppos v))
-    | Divide(v1,v2) -> helper (Oppos v1) +. (valuesCostVar (Divide(v1,v2)))
+    | Opposite v -> helper (Prev v) +. (valuesCostVar (Opposite v))
+    | Divide(v1,v2) -> helper (Opposite v1) +. (valuesCostVar (Divide(v1,v2)))
     | _ -> raise (InternalGenerationError("in cumsum_op"))
     in if Hashtbl.mem cumsum_op_htbl var
     then Hashtbl.find cumsum_op_htbl var
@@ -41,7 +48,7 @@ let cumsum_op var =
 
 let total_var_unit = 0.
     +. (valuesCostVar Unit)
-    +. (valuesCostVar Zero)
+    +. (valuesCostVar Indefinite)
     +. (valuesCostVar (Name ""))
 
 let cumsum_unit_htbl = Hashtbl.create 101
@@ -49,8 +56,8 @@ let cumsum_unit_htbl = Hashtbl.create 101
 let cumsum_unit var =
     let rec helper var = match var with
     | Unit -> valuesCostVar Unit
-    | Zero -> helper Unit +. (valuesCostVar Unit)
-    | Name _ -> helper Zero +. (valuesCostVar (Name ""))
+    | Indefinite -> helper Unit +. (valuesCostVar Indefinite)
+    | Name _ -> helper Indefinite +. (valuesCostVar (Name ""))
     | _ -> raise (InternalGenerationError("in cumsum_unit"))
     in if Hashtbl.mem cumsum_unit_htbl var
     then Hashtbl.find cumsum_unit_htbl var
@@ -99,7 +106,7 @@ let rec get_random_var : string list -> var = fun var_list ->
     if Random.bool () then
         match Random.float total_var_unit with
         | n when n < cumsum_unit Unit -> Unit
-        | n when n < cumsum_unit Zero -> Zero
+        | n when n < cumsum_unit Indefinite -> Indefinite
         | n when n < cumsum_unit (Name "") ->
             begin
                 match var_list with 
@@ -118,8 +125,8 @@ let rec get_random_var : string list -> var = fun var_list ->
             Next (get_random_var var_list)
         | n when n < cumsum_op (Prev(dummy_var)) ->
             Prev (get_random_var var_list)
-        | n when n < cumsum_op (Oppos(dummy_var)) ->
-            Oppos (get_random_var var_list)
+        | n when n < cumsum_op (Opposite(dummy_var)) ->
+            Opposite (get_random_var var_list)
         | n when n < cumsum_op (Divide(dummy_var,dummy_var)) ->
             Divide (get_random_var var_list, get_random_var var_list)
         | _ -> raise (InternalGenerationError("in total_var_op"))
@@ -134,7 +141,7 @@ let rec rec_generate_random : string list -> (string list * program) =
         (var_list,Turn(var))
     | n when n < cumsum_program (Embed(dummy_program)) ->
         let l,p = rec_generate_random var_list in
-        (l,Embed(p))
+        (var_list,Embed(p))
     | n when n < cumsum_program (Concat(dummy_program,dummy_program)) ->
         let l,p = rec_generate_random var_list in
         let l',p' = rec_generate_random l in
@@ -161,7 +168,7 @@ let rec rec_generate_random : string list -> (string list * program) =
                   (varArray.(1),
                    varArray.(2),
                    varArray.(3),
-                   varArray.(4))))
+                   None)))
     | _ -> raise (InternalGenerationError("in rec_generate_random"))
 
 let generate_random : unit -> program =

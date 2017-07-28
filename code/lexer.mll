@@ -37,9 +37,9 @@ rule read =
   | "Next"   { NEXT }
   | "Divide" { DIVIDE }
   | "Prev"   { PREV }
-  | "Oppos"   { OPPOS }
-  | "0" { ZERO }
+  | "Opposite"   { OPPOSITE }
   | "unit"   { UNIT }
+  | "indefinite"   { INDEFINITE }
   | "Turn"   { TURN }
   | "Repeat"   { REPEAT }
   | "Integrate"   { INTEGRATE }

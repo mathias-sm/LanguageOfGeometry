@@ -26,7 +26,9 @@ let my_print_bool b = match b with
  | true -> "on"
  | false -> "off"
 
-(* The relevant units *)
+let normal_random () =
+    let u1 = Random.float 1. and u2 = Random.float 1. in
+    (sqrt ((-2.) *. (log u1) )) *. (cos (2. *. pi *. u2))
 
 let get_infos d_from_origin box canvas =
     let d2 = 2. *. d_from_origin in
@@ -39,8 +41,8 @@ let get_infos d_from_origin box canvas =
     let offsetx = (Gg.P2.x s -. dim) /. 2. in
     let offsety = (Gg.P2.y s -. dim) /. 2. in
     let view = Gg.Box2.v
-        (Gg.P2.v (Gg.P2.x o +. offsetx -. 1.) (Gg.P2.y o +. offsety -. 1.))
-        (Gg.P2.v (dim +. 2.) (dim +. 2.)) in
+        (Gg.P2.v (Gg.P2.x o +. offsetx -. 0.) (Gg.P2.y o +. offsety -. 0.))
+        (Gg.P2.v (dim +. 0.) (dim +. 0.)) in
     (*let size = Size2.v (d_from_origin +. maxdim) (d_from_origin +. maxdim) in*) 
     let size = Size2.v (2. *. d_from_origin) (2. *. d_from_origin) in
     let area = `O { P.o with P.width = dim /. d2 } in

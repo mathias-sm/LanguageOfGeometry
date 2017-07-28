@@ -14,10 +14,10 @@
 %token HALF
 %token NEXT
 %token PREV
-%token OPPOS
+%token OPPOSITE
 %token DIVIDE
 %token UNIT
-%token ZERO
+%token INDEFINITE
 %token COMMA_ARGS
 %token ARG_ANGLE
 %token ARG_T
@@ -29,11 +29,11 @@
 %token EQUALS
 %token EOF
 
-%start <((float)*Interpreter.program) option> program
+%start <(Interpreter.program) option> program
 %%
 program:
     | EOF       { None }
-    | v = value ; EOF { Some (0.,v) }
+    | v = value ; EOF { Some (v) }
 ;
 
 optional_comma:
@@ -42,14 +42,14 @@ optional_comma:
 
 expr:
   | UNIT { Interpreter.Unit }
-  | ZERO { Interpreter.Zero }
+  | INDEFINITE { Interpreter.Indefinite }
   | DOUBLE ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Double (e) }
   | HALF ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Half (e) }
   | NEXT ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Next (e) }
   | DIVIDE ; BEGIN_ARGS ; e1 = expr ; COMMA_ARGS ; e2 = expr ; END_ARGS
     {Interpreter.Divide (e1,e2) }
   | PREV ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Prev (e) }
-  | OPPOS ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Oppos (e) }
+  | OPPOSITE ; BEGIN_ARGS ; e = expr ; END_ARGS {Interpreter.Opposite (e) }
   | s = VAR { Interpreter.Name s }
 
 optional_turn_args:

@@ -177,7 +177,7 @@ The Language of Geometry (LoG)
 
 ### Syntax
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Var     := | unit_angle | unit_distance | unit_loop 
            | unit_speed | unit_accel | unit_angular_speed | unit_angular_accel
            | 0
@@ -296,7 +296,7 @@ by this time the semantics will need to be fully specified.
 
 #### The most simple one
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Integrate
 ```
 
@@ -305,7 +305,7 @@ units and therefore draws a short, noisy segment.
 
 #### Now with repetitions
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Repeat {
     Repeat {
         Integrate ;
@@ -318,7 +318,7 @@ This uses the full potential of default values, but another way to write
 exactly the same program in a more detailed --- but semantically equivalent ---
 way would look like this:
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Repeat(4) {
         Integrate(d=unit_distance,pen=on,
                   speed=unit_speed,
@@ -331,7 +331,7 @@ Repeat(4) {
 
 #### Let's add some curves
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Integrate(angularSpeed=unit_angular_speed)
 ```
 
@@ -342,7 +342,7 @@ is drawn by the program.
 If we want half the circle, same speed, then the length being the same we will
 get doubled diameter :
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Integrate(angularSpeed=Half(unit_angular_speed))
 ```
 
@@ -351,7 +351,7 @@ Integrate(angularSpeed=Half(unit_angular_speed))
 Now what happens if one tries to draw a circle, that is with a fixed amount of
 angular speed, but keeps on going faster for each time period?
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Integrate(accel=unit_accel,angularSpeed=unit_angular_speed) ;
 ```
 
@@ -362,7 +362,7 @@ higher value for the integrate length `d` :
 
 * Version with higher `d` value :
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Integrate(d=Double(Double(unit_distance)),
           accel=unit_accel,
           angularSpeed=unit_angular_speed)
@@ -370,7 +370,7 @@ Integrate(d=Double(Double(unit_distance)),
 
 * Version with repetitions :
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Repeat {
   Repeat {
     Integrate(accel=unit_accel,angularSpeed=unit_angular_speed)
@@ -380,7 +380,7 @@ Repeat {
 
 #### What can we do with backtracking?
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 middle = Half(unit_distance) ;
 short = Half(middle) ;
 Integrate(angularSpeed=unit_angular_speed) ;
@@ -411,7 +411,7 @@ understanding the Save/Load structure.
 
 #### Let's put all this together
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 SetValues(angularAccel=0.0005) ;
 Save("centre") ;
 DiscreteRepeat(8) {
@@ -433,7 +433,7 @@ perfected in the long run.
 
 #### Using one shape as a guide for another
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 Save("square");
 SetValues(accel=0.5,angularSpeed=0.6) ;
 Save("spiral");
@@ -455,7 +455,7 @@ The spiral is here used as a guide where the squares are placed.
 
 ##### A square-ish spiral
 
-```LoG
+```{.LoG contenteditable= autocomplete=off spellcheck=false}
 SetValues(accel=1) ;
 DiscreteRepeat(20) {
     Integrate(1) ;

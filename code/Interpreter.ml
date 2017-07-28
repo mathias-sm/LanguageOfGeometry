@@ -6,10 +6,10 @@ open Utils
 
 type var =    Name of string
             | Unit
-            | Zero
+            | Indefinite
             | Double of var | Half of var
             | Next of var | Prev of var
-            | Oppos of var
+            | Opposite of var
             | Divide of var * var
 
 type innerValues = var option
@@ -36,13 +36,13 @@ exception MalformedProgram of string
 
 let rec my_print_var v = match v with
     | Name s -> s
-    | Zero -> "0"
+    | Indefinite -> "indefinite"
     | Unit -> "unit"
     | Double v' -> "Double(" ^ (my_print_var v') ^ ")"
     | Half v' -> "Half(" ^ (my_print_var v') ^ ")"
     | Next v' -> "Next(" ^ (my_print_var v') ^ ")"
     | Prev v' -> "Prev(" ^ (my_print_var v') ^ ")"
-    | Oppos v' -> "Oppos(" ^ (my_print_var v') ^")"
+    | Opposite v' -> "Opposite(" ^ (my_print_var v') ^")"
     | Divide (v1,v2) ->
         "Divide(" ^ (my_print_var v1) ^ ","^(my_print_var v2)^")"
 
@@ -76,28 +76,30 @@ let replace curr future =
 
 let (<<-) curr future = replace curr future
 
-let pp_program channel program =
+let pp_program program =
     let rec pp_helper program tabs = match program with
         | Concat (p1,p2) ->
-                pp_helper p1 tabs ; Printf.fprintf channel " ;\n" ; pp_helper p2 tabs
-        | Turn f -> Printf.fprintf channel "%sTurn%s" tabs
+            let s1 = pp_helper p1 tabs in
+            let s2 = pp_helper p2 tabs in
+            Printf.sprintf "%s ;\n%s" s1 s2
+        | Turn f -> Printf.sprintf "%sTurn%s" tabs
             (match f with
             | None -> ""
             | Some(f) -> sprintf "(angle=%s)" (my_print_var f))
         | Embed pr ->
-            Printf.fprintf channel "%sEmbed {\n" tabs ;
-            pp_helper pr (Printf.sprintf "%s  " tabs) ;
-            Printf.fprintf channel "\n%s}" tabs
+            let s = pp_helper pr (tabs^"  ") in
+            sprintf "%sEmbed {\n%s\n%s}" tabs s tabs
         | Repeat (n,pr) ->
-            Printf.fprintf channel "%sRepeat%s {\n" tabs
+            let s = pp_helper pr (tabs^"  ") in
+            sprintf "%sRepeat%s {\n%s\n%s}"
+                tabs
                 (match n with
                 | None -> ""
                 | Some(m) when m = Unit -> ""
-                | Some(m) -> "("^my_print_var m^")");
-            pp_helper pr (Printf.sprintf "%s  " tabs) ;
-            Printf.fprintf channel "\n%s}" tabs
+                | Some(m) -> "("^my_print_var m^")")
+                s tabs
         | Integrate (f,pen,(speed,accel,angularSpeed,angularAccel)) ->
-            Printf.fprintf channel "%sIntegrate%s"
+            sprintf "%sIntegrate%s"
             tabs
             (if f = None && pen = None && speed = None && accel = None &&
                 angularSpeed = None && angularAccel = None then ""
@@ -110,32 +112,32 @@ let pp_program channel program =
                 (match angularAccel with None->()|Some(f)->s:=!s^"angularAccel="^my_print_var f^",");
             end ; ((String.sub !s 0 ((String.length !s) - 1))^")")))
         | Define (name,v) ->
-            Printf.fprintf channel "%s%s = %s" tabs name (my_print_var v)
+            sprintf "%s%s = %s" tabs name (my_print_var v)
     in
-    pp_helper program "" ; print_newline ()
+    pp_helper program ""
 
 let valuesCostVar : var -> int =
     fun v -> match v with
     | Unit -> 1
-    | Zero -> 1
+    | Indefinite -> 1
     | Name _ -> 1
     | Double v' ->  1
     | Half v' ->  1
     | Next v' ->  1
     | Prev v' ->  1
-    | Oppos v' ->  1
+    | Opposite v' ->  1
     | Divide(v1,v2) -> 1
 
 let costVar : var option -> int =
     let rec helper v = match v with
         | Unit -> valuesCostVar Unit
-        | Zero -> valuesCostVar Zero
+        | Indefinite -> valuesCostVar Indefinite
         | Name s -> valuesCostVar (Name s)
         | Double v' ->  (valuesCostVar (Double v')) + helper v'
         | Half v' ->  (valuesCostVar (Half v')) + helper v'
         | Prev v' ->  (valuesCostVar (Prev v')) + helper v'
         | Next v' ->  (valuesCostVar (Next v')) + helper v'
-        | Oppos v' ->  (valuesCostVar (Oppos v')) + helper v'
+        | Opposite v' ->  (valuesCostVar (Opposite v')) + helper v'
         | Divide(v1,v2) -> (valuesCostVar (Divide(v1,v2))) + helper v1 + helper v2
     in fun vo -> match vo with
     | None -> 0
@@ -172,12 +174,12 @@ let rec costProgram : program -> int =
 let evaluateVar v htbl_var =
     let rec evaluateVar_helper v htbl_var = match v with
     | Unit -> 1.
-    | Zero -> 0.
+    | Indefinite -> 10. +. (float_of_int (Random.int 5))
     | Double v' -> 2.*.(evaluateVar_helper v' htbl_var)
     | Half v' -> (evaluateVar_helper v' htbl_var) /. 2.
     | Prev v' -> (evaluateVar_helper v' htbl_var) -. 1.
     | Next v' -> (evaluateVar_helper v' htbl_var) +. 1.
-    | Oppos v' -> (-1.)*.(evaluateVar_helper v' htbl_var)
+    | Opposite v' -> (-1.)*.(evaluateVar_helper v' htbl_var)
     | Divide (v1,v2) -> (evaluateVar_helper v1 htbl_var) /.
     (evaluateVar_helper v2 htbl_var)
     | Name s ->
@@ -187,19 +189,20 @@ let evaluateVar v htbl_var =
             let v = evaluateVar_helper value htbl_var in
             Hashtbl.add htbl_var s value ;
             v
-        else raise (MalformedProgram(s ^ "unknown in evaluateVar"))
+        else raise (MalformedProgram(s ^ " unknown in evaluateVar"))
     in match evaluateVar_helper v htbl_var with
     | n when n = nan -> raise (MalformedProgram("Some var was NaN"))
     | f -> f
 
-let interpret : canvas -> program -> canvas =
-    fun canvas program  ->
+let interpret : canvas -> program -> bool -> canvas =
+    fun canvas program noise ->
     let has_started = ref false in
     let rec inter canvas program htbl_var curr_state =
         match program with
         | Embed p ->
             let save_state =
                 {curr_state with x = curr_state.x} in
+            let canvas = moveto canvas curr_state.x curr_state.y in
             replace_stroke curr_state empty_state ;
             let htbl_var' = Hashtbl.copy htbl_var in
             let canvas =
@@ -221,27 +224,25 @@ let interpret : canvas -> program -> canvas =
             let n' = int_of_float (match n with
                 | None -> 2.
                 | Some v -> evaluateVar v htbl_var) in
-            let rec helper n canvas = match n with
-            | 0 -> canvas
-            | n ->
-                let new_canvas =
-                    inter canvas pr htbl_var curr_state
-                in helper (n-1) new_canvas
-            in if n' <= 0 then canvas else helper n' canvas
+            let ref_canvas = ref canvas in
+            for i = 1 to n' do
+                ref_canvas := inter !ref_canvas pr htbl_var curr_state
+            done ;
+            !ref_canvas
         | Integrate (f, pen, (speed,accel,angularSpeed,angularAccel)) ->
             let f = match f with None -> 1.
                     | Some v -> evaluateVar v htbl_var in
             let speed =
-                (match speed with None -> curr_state.speed
+                (match speed with None -> 1.
                     | Some v -> evaluateVar v htbl_var) and
             accel =
-                (match accel with None -> curr_state.accel
+                (match accel with None -> 0.
                     | Some v -> evaluateVar v htbl_var) and
             angularSpeed =
-                (match angularSpeed with None -> curr_state.angularSpeed
+                (match angularSpeed with None -> 0.
                     | Some v -> evaluateVar v htbl_var) and
             angularAccel =
-                (match angularAccel with None -> curr_state.angularAccel
+                (match angularAccel with None -> 0.
                     | Some v -> evaluateVar v htbl_var) in
             curr_state.speed <- speed ;
             curr_state.accel <- accel ;
@@ -255,21 +256,25 @@ let interpret : canvas -> program -> canvas =
                     let futur_x =
                         curr_state.x
                      +. (curr_state.speed /. 250.) *. cos(curr_state.face)
+                     +. (if noise then (normal_random () /. 750.) else 0.)
                     and futur_y =
                         curr_state.y
-                     +. (curr_state.speed /. 250.) *. sin(curr_state.face) in
+                     +. (curr_state.speed /. 250.) *. sin(curr_state.face)
+                     +. (if noise then (normal_random () /. 750.) else 0.) in
                     r_canvas :=
                         if pen then lineto !r_canvas futur_x futur_y
                         else moveto !r_canvas futur_x futur_y ;
                     curr_state.x <- futur_x ;
                     curr_state.y <- futur_y ;
                     curr_state.face <-
-                        curr_state.face +. (curr_state.angularSpeed /. 500.) ;
+                        curr_state.face +. (curr_state.angularSpeed /. 500.)
+                         +. (if noise then (normal_random () /. 4000.) else 0.);
                     curr_state.speed <-
-                        curr_state.speed +. (curr_state.accel /. 2500.) ;
+                        curr_state.speed +. (curr_state.accel /. 2500.)
+                         +. (if noise then (normal_random () /. 12000.) else 0.);
                     curr_state.angularSpeed <-
-                        curr_state.angularSpeed +. (curr_state.angularAccel /.
-                        10000000.)
+                        curr_state.angularSpeed
+                        +. (curr_state.angularAccel /. 100.)
                 done
             end ;
             !r_canvas

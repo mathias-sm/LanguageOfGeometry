@@ -2,8 +2,8 @@
 title: The Language of Geometry --- Sandbox
 author:
  - Mathias Sablé Meyer
- - Stanislas Dehaene
  - Marie Amalric
+ - Stanislas Dehaene
 include-before: <script src="Main.js"></script>
 css:
  - style.css
@@ -13,8 +13,8 @@ lang: en
 
 # Syntax
 
-```LoG
-Var     := | unit_ | 0
+~~~~ {.LoG contenteditable= autocomplete=off spellcheck=false}
+Var     := | unit | 0
            | Double(Var) | Half(Var)
            | Next(Var) | Prev(Var)
            | Oppos(Var)
@@ -30,7 +30,7 @@ Program := | Program ; Program
                        [accel=Var],
                        [angularSpeed=Var],
                        [angularAccel=Var])
-```
+~~~~
 
 
 # Sandbox
@@ -38,9 +38,9 @@ Program := | Program ; Program
 <form>
 <textarea id="program" rows="20" autocomplete="off" autocorrect="off"
 autocapitalize="off" spellcheck="false">
-dix = Next(Next(Double(Double(Double(unit))))) ;
+ten = Next(Next(Double(Double(Double(unit))))) ;
  n = Next(Next(unit)) ;
- Repeat(dix) {
+ Repeat(ten) {
   Embed {
    Repeat(n) {
     Integrate(t=Divide(Half(unit),n)) ;
@@ -51,11 +51,17 @@ dix = Next(Next(Double(Double(Double(unit))))) ;
  Integrate(t=Half(Half(unit)),pen=off)
 }</textarea>
 
-<div class="centerize"> <button id="interpret"
-type="button">Interpret!</button> </div> </form>
+<div class="centerize">
+
+<button id="interpret" type="button">Interpret!</button>
+
+<button id="ifl" type="button">I'm feeling lucky!</button>
+
+</div> </form>
 
 <div id="errorOutput"></div>
 <div id="normalOutput"></div>
+
 
 <div id="programCanvas"></div>
 

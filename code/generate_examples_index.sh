@@ -11,7 +11,7 @@ for file in ./examples/*.LoG
 do
     echo "## $(basename -s .LoG $file)"
     echo
-    echo "\`\`\`LoG"
+    echo "\`\`\`{.LoG contenteditable= autocomplete=off spellcheck=false}"
     cat $file
     echo "\`\`\`"
     echo

@@ -1,5 +1,4 @@
 module Html = Dom_html
-open Interpreter
 open Plotter
 open Renderer_js
 open Interpreter
@@ -8,6 +7,8 @@ open Lexer
 open Lexing
 
 exception MalformedProgram of string
+
+let _ = Random.self_init ()
 
 let showError msg = 
   let errorOutput = Html.getElementById "errorOutput" in
@@ -79,22 +80,29 @@ let drawProgram c =
     normalOutput##innerHTML <- Js.string ("") ;
     (try 
         (match read_program program_string with
-            | Some (noise, program) ->
+            | Some (program) ->
                     showError "" ;
                     normalOutput##innerHTML <-
                         Js.string (Printf.sprintf "Program's cost : %d"
                                     (costProgram program)) ;
                     let canvas =
-                        try interpret internal_c program
-                        with Interpreter.MalformedProgram(s) -> showError s ;
-                        failwith("error")
-
+                        (try (interpret internal_c program true)
+                        with
+                        Interpreter.MalformedProgram(s)
+                            -> showError s ; failwith("error"))
                     in
                     paint_on_html_canvas canvas c
             | None -> ())
     with MalformedProgram(error_message) -> showError error_message
     ) ;
     Js._true
+
+let ifl c =
+    let p = Generator.generate_random () in
+    let textarea_interne = Html.getElementById "program" in
+    let s = pp_program p in
+    textarea_interne##innerHTML <- Js.string (s) ;
+    drawProgram c
 
 
 let start _ =
@@ -104,8 +112,10 @@ let start _ =
      let width = whereToDraw##clientWidth in
      let canvas = create_canvas width (width/2) in
      Dom.appendChild whereToDraw canvas;
-     let button = Html.getElementById "interpret" in
-     button##onclick <- Dom_html.handler (fun _ -> drawProgram canvas) ;
+     let button_run = Html.getElementById "interpret" in
+     let button_ifl = Html.getElementById "ifl" in
+     button_run##onclick <- Dom_html.handler (fun _ -> drawProgram canvas) ;
+     button_ifl##onclick <- Dom_html.handler (fun _ -> ifl canvas ) ;
      Lwt.return ());
   Js._false
 
