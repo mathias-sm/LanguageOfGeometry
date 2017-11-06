@@ -10,6 +10,9 @@ fontsize: 10pt
 geometry: top=3cm, bottom=3cm, left=3cm, right=3cm
 header-includes:
     - \usepackage{graphicx}
+css:
+    - style.css
+include-before: <script src="Main.js"></script>
 abstract: |
     Since the upper paleolithic, human of all cultures have reproducibly made
     drawings and painting using a small set of symbolic, non-figurative shapes:
@@ -123,7 +126,7 @@ alpha = unit ;
 Repeat(indefinite) {
   Integrate ;
   Turn(angle=alpha) ;
-  alternate = Opposite(alpha)
+  alpha = Opposite(alpha)
 }
 ```
 
@@ -145,11 +148,11 @@ Syntax
 We propose the following syntax for such a language of shapes:
 
 ```LoG
-Var     ::= | unit | 0
+Var     ::= | unit
             | Double(Var) | Half(Var)
             | Next(Var) | Prev(Var)
             | Oppos(Var)
-            | Divide(Var,Var) (<- ?)
+            | Divide(Var,Var)
 
 Program ::= | Program ; Program
             | Turn([angle=Var])

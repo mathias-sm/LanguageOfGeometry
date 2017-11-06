@@ -14,6 +14,13 @@ js:
 	    --disable genprim \
 	    -o Main.js
 
+file:
+	ocamlbuild -use-menhir -tag thread -tag debug -use-ocamlfind \
+	    -package gg \
+	    -package vg \
+	    -package vg.cairo \
+	    Main_file.native
+
 test:
 	ocamlbuild -use-menhir -tag thread -tag debug -use-ocamlfind \
 	    -package gg \
@@ -30,10 +37,10 @@ generate:
 	    -package vg.cairo \
 	    Main_generate.native
 
-html: index ex sandbox
+html: index ex sandbox introduction
 
 index:
-	$(pandoc) whitePaper.md -o index.html
+	$(pandoc) whitePaper.md -o white.html
 
 introduction:
 	$(pandoc) introduction.md -o index.html
@@ -51,7 +58,6 @@ clean:
 pandoc = pandoc -s --toc --toc-depth=4 \
 	 --from markdown-markdown_in_html_blocks+raw_html+smart+fenced_code_attributes \
 	 --bibliography ./references.bib \
-	 --mathjax \
 	 --syntax-definition=LoG_highlight.xml --highlight-style=zenburn \
 	 -A numLines.js \
 	 -t html5

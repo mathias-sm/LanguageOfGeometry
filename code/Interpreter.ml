@@ -194,39 +194,35 @@ let evaluateVar v htbl_var =
     | n when n = nan -> raise (MalformedProgram("Some var was NaN"))
     | f -> f
 
-let interpret : canvas -> program -> bool -> canvas =
-    fun canvas program noise ->
-    let has_started = ref false in
-    let rec inter canvas program htbl_var curr_state =
+let interpret : ?animationOutput:string option -> canvas -> program -> bool -> canvas =
+    fun ?animationOutput:(animationOutput=None) canvas program noise ->
+    let innerCounter = ref 0 in
+    let rec inter ?sizes:(sizes=None) canvas program htbl_var curr_state =
         match program with
         | Embed p ->
             let save_state =
                 {curr_state with x = curr_state.x} in
-            let canvas = moveto canvas curr_state.x curr_state.y in
-            replace_stroke curr_state empty_state ;
             let htbl_var' = Hashtbl.copy htbl_var in
-            let canvas =
-                inter canvas p htbl_var' curr_state in
+            let canvas = inter ~sizes canvas p htbl_var' curr_state in
             replace curr_state save_state ;
+            let canvas = moveto canvas curr_state.x curr_state.y in
             canvas
         | Turn f ->
                 let angle : float = match f with None -> 1. | Some(f') ->
                     evaluateVar f' htbl_var in
-                if !has_started
-                    then curr_state.face <- curr_state.face +. angle *. pis2 ;
+                curr_state.face <- curr_state.face +. angle *. pis2 ;
                 canvas
         | Concat (p1,p2) ->
             let new_canvas =
-                inter canvas p1 htbl_var curr_state
-            in inter new_canvas p2 htbl_var curr_state
+                inter ~sizes canvas p1 htbl_var curr_state
+            in inter ~sizes new_canvas p2 htbl_var curr_state
         | Repeat (n, pr) ->
-            has_started := true;
             let n' = int_of_float (match n with
                 | None -> 2.
                 | Some v -> evaluateVar v htbl_var) in
             let ref_canvas = ref canvas in
             for i = 1 to n' do
-                ref_canvas := inter !ref_canvas pr htbl_var curr_state
+                ref_canvas := inter ~sizes !ref_canvas pr htbl_var curr_state
             done ;
             !ref_canvas
         | Integrate (f, pen, (speed,accel,angularSpeed,angularAccel)) ->
@@ -249,43 +245,70 @@ let interpret : canvas -> program -> bool -> canvas =
             curr_state.angularSpeed <- angularSpeed ;
             curr_state.angularAccel <- angularAccel ;
             let pen = match pen with | None -> true | Some b -> b in
-            if pen then has_started := true ;
             let r_canvas = ref canvas in
-            if !has_started then begin
-                for i = 0 to (int_of_float (1000. *. pi *. f)) do
-                    let futur_x =
-                        curr_state.x
-                     +. (curr_state.speed /. 250.) *. cos(curr_state.face)
-                     +. (if noise then (normal_random () /. 750.) else 0.)
-                    and futur_y =
-                        curr_state.y
-                     +. (curr_state.speed /. 250.) *. sin(curr_state.face)
-                     +. (if noise then (normal_random () /. 750.) else 0.) in
-                    r_canvas :=
-                        if pen then lineto !r_canvas futur_x futur_y
-                        else moveto !r_canvas futur_x futur_y ;
-                    curr_state.x <- futur_x ;
-                    curr_state.y <- futur_y ;
-                    curr_state.face <-
-                        curr_state.face +. (curr_state.angularSpeed /. 500.)
-                         +. (if noise then (normal_random () /. 4000.) else 0.);
-                    curr_state.speed <-
-                        curr_state.speed +. (curr_state.accel /. 2500.)
-                         +. (if noise then (normal_random () /. 12000.) else 0.);
-                    curr_state.angularSpeed <-
-                        curr_state.angularSpeed
-                        +. (curr_state.angularAccel /. 100.)
-                done
-            end ;
+            for i = 0 to (int_of_float (1000. *. pi *. f)) do
+                let futur_x =
+                    curr_state.x
+                 +. (curr_state.speed /. 250.) *. cos(curr_state.face)
+                 +. (if noise then (normal_random () /. 750.) else 0.)
+                and futur_y =
+                    curr_state.y
+                 +. (curr_state.speed /. 250.) *. sin(curr_state.face)
+                 +. (if noise then (normal_random () /. 750.) else 0.) in
+                r_canvas :=
+                    if pen then lineto !r_canvas futur_x futur_y
+                           else moveto !r_canvas futur_x futur_y ;
+                curr_state.x <- futur_x ;
+                curr_state.y <- futur_y ;
+                curr_state.face <-
+                    curr_state.face +. (curr_state.angularSpeed /. 500.)
+                     +. (if noise then (normal_random () /. 4000.) else 0.);
+                curr_state.speed <-
+                    curr_state.speed +. (curr_state.accel /. 2500.)
+                     +. (if noise then (normal_random () /. 12000.) else 0.);
+                curr_state.angularSpeed <-
+                    curr_state.angularSpeed
+                    +. (curr_state.angularAccel /. 12500.) ;
+                match animationOutput,sizes with
+                    | (Some folder,Some (view,size)) when (i mod 100) = 0
+                                                          && pen ->
+                        Renderer.output_canvas_png ~smart:false ~sizes !r_canvas
+                            (sprintf "%s/%05d.png"
+                                folder
+                                (!innerCounter)) ;
+                        innerCounter := !innerCounter + 1
+                    | _ -> ()
+            done ;
             !r_canvas
         | Define (name,v) -> Hashtbl.add htbl_var name v ; canvas
-    in let initial_state =
-        { x = middle_x canvas
-        ; y = middle_y canvas
-        ; face = 0.
-        ; speed = 1.
-        ; accel = 0.
-        ; angularSpeed = 0.
-        ; angularAccel = 0. }
     in
-    inter canvas program (Hashtbl.create 101) initial_state
+    match animationOutput with
+        | None -> let initial_state =
+                    { x = middle_x canvas
+                    ; y = middle_y canvas
+                    ; face = 0.
+                    ; speed = 1.
+                    ; accel = 0.
+                    ; angularSpeed = 0.
+                    ; angularAccel = 0. } in
+                inter canvas program (Hashtbl.create 101) initial_state
+        | Some fname -> let initial_state =
+                    { x = middle_x canvas
+                    ; y = middle_y canvas
+                    ; face = 0.
+                    ; speed = 1.
+                    ; accel = 0.
+                    ; angularSpeed = 0.
+                    ; angularAccel = 0. } in
+            let (c,box) =
+                inter canvas program (Hashtbl.create 101) initial_state in
+            let (view,size,_) = Utils.get_infos 100. box c in
+             let initial_state =
+                    { x = middle_x canvas
+                    ; y = middle_y canvas
+                    ; face = 0.
+                    ; speed = 1.
+                    ; accel = 0.
+                    ; angularSpeed = 0.
+                    ; angularAccel = 0. } in
+             inter ~sizes:(Some (view,size)) canvas program (Hashtbl.create 101) initial_state

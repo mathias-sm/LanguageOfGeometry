@@ -15,14 +15,7 @@ let readImage image (x,y) =
     for i = 0 to x-1 do
         for j = 0 to y-1 do
             let elt = Rgba32.get image i j in
-            (*let r = elt.color.r and g = elt.color.g and b = elt.color.b in*)
             let alpha = elt.alpha in
-            (*assert (r = g) ;*)
-            (*assert (g = b) ;*)
-            (*if r > 0 then print_endline "FINALY!" ;*)
-            (*if g > 0 then print_endline "FINALY!" ;*)
-            (*if b > 0 then print_endline "FINALY!" ;*)
-            (*print_int alpha ; print_newline () ;*)
             v.(i).(j) <- alpha
         done
     done ;
@@ -68,9 +61,7 @@ let save p c name cost =
     Printf.fprintf oc_w "%d\n" cost ;
     close_out oc ;
     close_out oc_w ;
-    try output_canvas_png c name
-    with Invalid_argument(_) -> print_endline "oopq I failed"
-
+    output_canvas_png c name
 
 let findMoreExpensiveDoublon cost =
     let image = Png.load (sprintf "/tmp/%s/tmp.png" base) [] in
@@ -88,7 +79,7 @@ let findMoreExpensiveDoublon cost =
             if (distance < threeshold) then begin
                 exists := true ;
                 refId := r_id ;
-                if cost > r_cost then shouldDiscard := true
+                if cost >= r_cost then shouldDiscard := true
             end
         end
     in
@@ -128,8 +119,8 @@ let () =
     done
 
 (*let () =*)
-    (*let fname1 = "/tmp/enumNew/5.png"*)
-    (*and fname2 = "/tmp/enumNew/3.png" in*)
+    (*let fname1 = "/tmp/enumNew/tmp.png"*)
+    (*and fname2 = "/tmp/enumNew/tmp.png" in*)
     (*let v = compare fname1 fname2 in*)
     (*printf "%f" v ;*)
     (*print_newline ()*)

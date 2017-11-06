@@ -132,24 +132,26 @@ let rec get_random_var : string list -> var = fun var_list ->
         | _ -> raise (InternalGenerationError("in total_var_op"))
 
 
-let rec rec_generate_random : string list -> (string list * program) =
+let rec_generate_random : string list -> (string list * program) =
     fun var_list ->
+    let nonEmpty = ref false in
+    let rec helper = fun var_list ->
     match Random.float total_program with
     | n when n < cumsum_program (Turn(None)) ->
         let b = Random.bool () in
         let var = if b then Some(get_random_var var_list) else None in
         (var_list,Turn(var))
     | n when n < cumsum_program (Embed(dummy_program)) ->
-        let l,p = rec_generate_random var_list in
+        let l,p = helper var_list in
         (var_list,Embed(p))
     | n when n < cumsum_program (Concat(dummy_program,dummy_program)) ->
-        let l,p = rec_generate_random var_list in
-        let l',p' = rec_generate_random l in
+        let l,p = helper var_list in
+        let l',p' = helper l in
         (l',Concat(p,p'))
     | n when n < cumsum_program (Repeat(None,dummy_program)) ->
         let b = Random.bool () in
         let var = if b then Some(get_random_var var_list) else None in
-        let l,p = rec_generate_random var_list in
+        let l,p = helper var_list in
         l,Repeat(var, p)
     | n when n < cumsum_program (Define("",dummy_var)) ->
         let var = get_random_var var_list in
@@ -162,14 +164,22 @@ let rec rec_generate_random : string list -> (string list * program) =
             if Random.int 10 = 0 then
             varArray.(i) <- Some(get_random_var var_list)
         done ;
+        let pen = if Random.bool () then None else Some(Random.bool ()) in
+        if pen = None || pen = Some(true) then nonEmpty := true ;
         (var_list,
          Integrate(varArray.(0),
-                  (if Random.bool () then None else Some(Random.bool ())),
+                  (pen),
                   (varArray.(1),
                    varArray.(2),
                    varArray.(3),
                    None)))
     | _ -> raise (InternalGenerationError("in rec_generate_random"))
+    in let l = ref [] and p = ref (Turn(None)) in
+    while not (!nonEmpty) do
+        let (ll,pp) = helper var_list in
+        if !nonEmpty then (l := ll ; p := pp)
+    done;
+    (!l,!p)
 
 let generate_random : unit -> program =
     fun () ->

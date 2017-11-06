@@ -86,7 +86,7 @@ let drawProgram c =
                         Js.string (Printf.sprintf "Program's cost : %d"
                                     (costProgram program)) ;
                     let canvas =
-                        (try (interpret internal_c program true)
+                        (try (interpret internal_c program false)
                         with
                         Interpreter.MalformedProgram(s)
                             -> showError s ; failwith("error"))
@@ -122,7 +122,6 @@ let start _ =
 
 let start _ =
   try
-    ignore (Html.createCanvas (Html.window##document));
     start ()
   with Html.Canvas_not_available ->
     unsupported_messages ();

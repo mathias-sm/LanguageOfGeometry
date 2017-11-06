@@ -14,7 +14,7 @@ lang: en
 # Syntax
 
 ~~~~ {.LoG contenteditable= autocomplete=off spellcheck=false}
-Var     := | unit | 0
+Var     := | unit
            | Double(Var) | Half(Var)
            | Next(Var) | Prev(Var)
            | Oppos(Var)
